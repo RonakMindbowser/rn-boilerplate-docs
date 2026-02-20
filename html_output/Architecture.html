@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ── Design tokens (mirrors index.html) ─────────────────── */
+        :root {
+            --bg:           #0a0a0f;
+            --surface:      #111118;
+            --surface2:     #18181f;
+            --surface3:     #1e1e28;
+            --border:       rgba(255,255,255,0.07);
+            --border-soft:  rgba(255,255,255,0.04);
+            --accent:       #63b3ed;
+            --accent2:      #f6ad55;
+            --accent3:      #68d391;
+            --accent4:      #9a75ea;
+            --text-primary: #f0f0f5;
+            --text-secondary:#8888a0;
+            --text-dim:     #444455;
+            --code-bg:      #13131c;
+            --radius:       10px;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #1e1e28 transparent;
+        }
+        html::-webkit-scrollbar { width: 6px; }
+        html::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 6px; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            line-height: 1.75;
+            color: var(--text-primary);
+            background: var(--bg);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* ── Layout ──────────────────────────────────────────────── */
+        .page-wrap {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Top bar ─────────────────────────────────────────────── */
+        .doc-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: 52px;
+            background: rgba(10,10,15,0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            gap: 16px;
+        }
+        .doc-topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .doc-topbar-icon {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, #63b3ed, #4299e1);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 12px;
+            color: #000;
+            letter-spacing: -0.5px;
+            box-shadow: 0 2px 10px rgba(99,179,237,0.25);
+            flex-shrink: 0;
+        }
+        .doc-topbar-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .doc-topbar-sep {
+            color: var(--text-dim);
+            font-size: 18px;
+            font-weight: 300;
+        }
+        .doc-topbar-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.3px;
+            font-weight: 400;
+        }
+        .doc-topbar-spacer { flex: 1; }
+        .doc-topbar-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        /* ── Main content ────────────────────────────────────────── */
+        .doc-body {
+            display: flex;
+            flex: 1;
+        }
+
+        /* TOC sidebar */
+        .doc-toc {
+            width: 220px;
+            min-width: 220px;
+            position: sticky;
+            top: 25px;
+            align-self: flex-start;
+            height: calc(100vh - 52px);
+            overflow-y: auto;
+            padding: 28px 16px 28px 24px;
+            border-right: 1px solid var(--border);
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface2) transparent;
+        }
+        .doc-toc::-webkit-scrollbar { width: 4px; }
+        .doc-toc::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+        .doc-toc-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .doc-toc ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .doc-toc ul li a {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 5px 8px;
+            border-radius: 6px;
+            border-left: 2px solid transparent;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .doc-toc ul li a:hover {
+            color: var(--accent);
+            background: rgba(99,179,237,0.06);
+            border-left-color: rgba(99,179,237,0.3);
+        }
+        .doc-toc ul ul { margin-left: 12px; }
+        .doc-toc ul ul li a { font-size: 11px; }
+
+        /* Article */
+        .doc-article {
+            flex: 1;
+            min-width: 0;
+            padding: 48px 56px 80px;
+            max-width: 860px;
+        }
+
+        /* ── Typography ──────────────────────────────────────────── */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            scroll-margin-top: 72px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #f0f0f5 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--accent), var(--accent4));
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            font-size: 17px;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 14px;
+            margin-top: 24px;
+            margin-bottom: 10px;
+            color: var(--accent);
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        strong { color: var(--text-primary); font-weight: 600; }
+        em { color: var(--accent2); font-style: italic; }
+
+        /* ── Links ───────────────────────────────────────────────── */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(99,179,237,0.25);
+            transition: border-color 0.15s, color 0.15s;
+        }
+        a:hover {
+            color: #90cdf4;
+            border-bottom-color: rgba(99,179,237,0.6);
+        }
+
+        /* ── Inline code ─────────────────────────────────────────── */
+        code {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 400;
+            background: var(--surface3);
+            color: var(--accent);
+            padding: 2px 7px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+
+        /* ── Code blocks ─────────────────────────────────────────── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0;
+            margin: 24px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        /* Code block header bar */
+        pre::before {
+            content: '';
+            display: block;
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            background-image: 
+                radial-gradient(circle at 14px 18px, #ff5f57 5px, transparent 5px),
+                radial-gradient(circle at 30px 18px, #febc2e 5px, transparent 5px),
+                radial-gradient(circle at 46px 18px, #28c840 5px, transparent 5px);
+        }
+
+        pre code {
+            display: block;
+            background: none;
+            border: none;
+            padding: 20px 24px;
+            color: #c9d1d9;
+            font-size: 13.5px;
+            line-height: 1.65;
+            overflow-x: auto;
+            white-space: pre;
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface2) transparent;
+        }
+        pre code::-webkit-scrollbar { height: 4px; }
+        pre code::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+
+        /* Codehilite wrapper */
+        .codehilite {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin: 24px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+        .codehilite::before {
+            content: '';
+            display: block;
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            background-image: 
+                radial-gradient(circle at 14px 18px, #ff5f57 5px, transparent 5px),
+                radial-gradient(circle at 30px 18px, #febc2e 5px, transparent 5px),
+                radial-gradient(circle at 46px 18px, #28c840 5px, transparent 5px);
+        }
+        .codehilite pre {
+            background: none;
+            border: none;
+            border-radius: 0;
+            margin: 0;
+            padding: 20px 24px;
+            box-shadow: none;
+        }
+        .codehilite pre::before { display: none; }
+        .codehilite pre code { padding: 0; }
+
+        /* ── Syntax highlighting (dark palette) ──────────────────── */
+        .codehilite .hll { background-color: #2a2a40 }
+        .codehilite .c,
+        .codehilite .cm,
+        .codehilite .c1,
+        .codehilite .cs  { color: #6a737d; font-style: italic }
+        .codehilite .cp  { color: #7ecfc0 }
+        .codehilite .k,
+        .codehilite .kc,
+        .codehilite .kd,
+        .codehilite .kn,
+        .codehilite .kr  { color: #ff79c6; font-weight: 600 }
+        .codehilite .kp  { color: #ff79c6 }
+        .codehilite .kt  { color: #8be9fd }
+        .codehilite .o,
+        .codehilite .ow  { color: #ff79c6 }
+        .codehilite .m,
+        .codehilite .mf,
+        .codehilite .mh,
+        .codehilite .mi,
+        .codehilite .mo,
+        .codehilite .il  { color: #bd93f9 }
+        .codehilite .s,
+        .codehilite .sb,
+        .codehilite .sc,
+        .codehilite .s2,
+        .codehilite .s1,
+        .codehilite .sh,
+        .codehilite .ss  { color: #f1fa8c }
+        .codehilite .sd  { color: #f1fa8c; font-style: italic }
+        .codehilite .se  { color: #ffb86c; font-weight: 600 }
+        .codehilite .si  { color: #ffb86c }
+        .codehilite .sx  { color: #50fa7b }
+        .codehilite .sr  { color: #50fa7b }
+        .codehilite .na  { color: #50fa7b }
+        .codehilite .nb  { color: #8be9fd }
+        .codehilite .bp  { color: #8be9fd }
+        .codehilite .nc  { color: #8be9fd; font-weight: 600 }
+        .codehilite .no  { color: #bd93f9 }
+        .codehilite .nd  { color: #50fa7b }
+        .codehilite .ni  { color: #ffb86c; font-weight: 600 }
+        .codehilite .ne,
+        .codehilite .nf  { color: #50fa7b }
+        .codehilite .nl  { color: #8be9fd; font-weight: 600 }
+        .codehilite .nn  { color: #8be9fd; font-weight: 600 }
+        .codehilite .nt  { color: #ff79c6; font-weight: 600 }
+        .codehilite .nv,
+        .codehilite .vc,
+        .codehilite .vg,
+        .codehilite .vi  { color: #8be9fd }
+        .codehilite .nx  { color: #c9d1d9 }
+        .codehilite .w   { color: #c9d1d9 }
+        .codehilite .err { color: #ff5555 }
+        .codehilite .p   { color: #c9d1d9 }
+        .codehilite .ge  { font-style: italic }
+        .codehilite .gs  { font-weight: bold }
+        .codehilite .gd  { color: #ff5555 }
+        .codehilite .gi  { color: #50fa7b }
+        .codehilite .go  { color: #6a737d }
+        .codehilite .gh  { color: #8be9fd; font-weight: bold }
+        .codehilite .gu  { color: #bd93f9; font-weight: bold }
+        .codehilite .gt  { color: #8be9fd }
+        .codehilite .gr  { color: #ff5555 }
+        .codehilite .gp  { color: #ffb86c; font-weight: bold }
+
+        /* ── Blockquote ───────────────────────────────────────────── */
+        blockquote {
+            border-left: 3px solid var(--accent2);
+            margin: 24px 0;
+            padding: 14px 20px;
+            background: rgba(246,173,85,0.05);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        blockquote strong { color: var(--accent2); }
+        blockquote p { margin: 0; color: inherit; }
+
+        /* ── Tables ──────────────────────────────────────────────── */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 24px 0;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+        }
+        thead tr {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 16px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border-soft);
+            color: var(--text-secondary);
+            vertical-align: top;
+        }
+        tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* ── Lists ───────────────────────────────────────────────── */
+        ul, ol {
+            padding-left: 24px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+        ul li, ol li {
+            margin-bottom: 6px;
+            padding-left: 4px;
+            line-height: 1.75;
+        }
+        ul li::marker { color: var(--accent); }
+        ol li::marker { color: var(--accent); font-family: 'DM Mono', monospace; font-size: 13px; }
+        li > ul, li > ol { margin-top: 6px; margin-bottom: 0; }
+
+        /* ── Horizontal rule ─────────────────────────────────────── */
+        hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 40px 0;
+        }
+
+        /* ── Mermaid diagrams ────────────────────────────────────── */
+        .mermaid {
+            margin: 28px 0;
+            padding: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            overflow-x: auto;
+            min-height: 60px;
+            position: relative;
+        }
+        /* Loading shimmer before mermaid renders */
+        .mermaid:not([data-processed="true"])::after {
+            content: 'Rendering diagram...';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ── Callout / admonition boxes ──────────────────────────── */
+        .callout {
+            display: flex;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: var(--radius);
+            margin: 20px 0;
+            border: 1px solid;
+            font-size: 14px;
+        }
+        .callout-info    { background: rgba(99,179,237,0.07);  border-color: rgba(99,179,237,0.2); }
+        .callout-warning { background: rgba(246,173,85,0.07);  border-color: rgba(246,173,85,0.2); }
+        .callout-success { background: rgba(104,211,145,0.07); border-color: rgba(104,211,145,0.2); }
+
+        /* ── Image ───────────────────────────────────────────────── */
+        img {
+            max-width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin: 12px 0;
+        }
+
+        /* ── Footer ──────────────────────────────────────────────── */
+        .doc-footer {
+            border-top: 1px solid var(--border);
+            padding: 20px 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .doc-footer a {
+            color: var(--accent);
+            border-bottom: none;
+        }
+
+        /* ── Responsive ──────────────────────────────────────────── */
+        @media (max-width: 1000px) {
+            .doc-toc { display: none; }
+            .doc-article { padding: 32px 28px 60px; }
+        }
+        @media (max-width: 640px) {
+            .doc-article { padding: 24px 18px 48px; }
+            h1 { font-size: 24px; }
+            h2 { font-size: 18px; }
+            .doc-topbar { padding: 0 18px; }
+            .doc-footer { padding: 16px 18px; flex-direction: column; gap: 4px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+
+        <div class="doc-body">
+            <!-- Auto-generated TOC -->
+            <nav class="doc-toc" id="docToc">
+                <div class="doc-toc-label">On this page</div>
+                <div id="tocList"></div>
+            </nav>
+
+            <!-- Main article -->
+            <article class="doc-article" id="docArticle">
+                <h1 id="architecture-documentation">Architecture Documentation</h1>
+<h2 id="overview">Overview</h2>
+<p>The Template project is built on a modular architecture designed for scalability, type safety, and clear separation of concerns. It follows a hybrid <strong>MVVM (Model-View-ViewModel)</strong> and <strong>MVC</strong> pattern for screens, combined with <strong>Redux Toolkit</strong> for centralized state management.</p>
+<hr />
+<h2 id="core-design-patterns">🏗️ Core Design Patterns</h2>
+<h3 id="1-screen-architecture-mvvmmvc">1. Screen Architecture (MVVM/MVC)</h3>
+<p>Each screen is divided into three distinct files to separate logic from presentation:</p>
+<ul>
+<li><strong><code>[Screen].tsx</code> (View)</strong>: Contains only the UI components and layout. It receives data and callbacks from the ViewModel.</li>
+<li><strong><code>[Screen].viewmodel.ts</code> (Controller/ViewModel)</strong>: A custom hook that contains all the business logic, state handling, and API triggers. It abstracts the "how" from the "what".</li>
+<li><strong><code>[Screen].styles.ts</code> (Style)</strong>: Uses a <code>useStyles</code> hook to provide theme-aware styling.</li>
+</ul>
+<h3 id="2-state-management-redux-toolkit">2. State Management (Redux Toolkit)</h3>
+<p>Centralized state is managed in <code>src/redux</code>. 
+- <strong>Slices</strong>: Functional areas have their own slices (e.g., <code>AppSlice</code>, <code>UserSlice</code>).
+- <strong>Async Thunks</strong>: Used for handling side effects like API calls and data persistence.</p>
+<h3 id="3-navigation-react-navigation-7">3. Navigation (React Navigation 7)</h3>
+<p>The app uses a nested navigation hierarchy:
+- <strong>RootStackNavigator</strong>: The top-level navigator that handles switching between <code>Auth</code> and <code>Main</code> stacks based on the <code>accessToken</code>.
+- <strong>MainStackNavigator</strong>: Contains common app screens and the <code>HomeTabNavigator</code>.
+- <strong>HomeTabNavigator</strong>: Implementation of the primary bottom tab bar.</p>
+<hr />
+<h2 id="source-directory-structure">📁 Source Directory Structure</h2>
+<div class="codehilite"><pre><span></span><code><span class="nx">src</span><span class="o">/</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">assets</span><span class="o">/</span><span class="w">                 </span><span class="err">#</span><span class="w"> </span><span class="nx">Static</span><span class="w"> </span><span class="nx">assets</span><span class="w"> </span><span class="p">(</span><span class="nx">Images</span><span class="p">,</span><span class="w"> </span><span class="nx">fonts</span><span class="p">,</span><span class="w"> </span><span class="nx">SVGs</span><span class="p">)</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">components</span><span class="o">/</span><span class="w">             </span><span class="err">#</span><span class="w"> </span><span class="nx">Reusable</span><span class="p">,</span><span class="w"> </span><span class="nx">atomic</span><span class="w"> </span><span class="nx">UI</span><span class="w"> </span><span class="nx">components</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">contexts</span><span class="o">/</span><span class="w">              </span><span class="err">#</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="nx">Context</span><span class="w"> </span><span class="nx">providers</span><span class="w"> </span><span class="p">(</span><span class="nx">Theme</span><span class="p">,</span><span class="w"> </span><span class="nx">Auth</span><span class="w"> </span><span class="nx">etc</span><span class="p">.)</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">hocs</span><span class="o">/</span><span class="w">                  </span><span class="err">#</span><span class="w"> </span><span class="nx">Higher</span><span class="o">-</span><span class="nx">Order</span><span class="w"> </span><span class="nx">Components</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nx">cross</span><span class="o">-</span><span class="nx">cutting</span><span class="w"> </span><span class="nx">concerns</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">hooks</span><span class="o">/</span><span class="w">                 </span><span class="err">#</span><span class="w"> </span><span class="nx">Custom</span><span class="w"> </span><span class="nx">shared</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="nx">hooks</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">language</span><span class="o">/</span><span class="w">              </span><span class="err">#</span><span class="w"> </span><span class="nx">I18n</span><span class="w"> </span><span class="nx">translations</span><span class="w"> </span><span class="p">(</span><span class="nx">i18next</span><span class="p">)</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">navigators</span><span class="o">/</span><span class="w">            </span><span class="err">#</span><span class="w"> </span><span class="nx">Navigation</span><span class="w"> </span><span class="nx">stacks</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">route</span><span class="w"> </span><span class="nx">definitions</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">networkConfig</span><span class="o">/</span><span class="w">         </span><span class="err">#</span><span class="w"> </span><span class="nx">API</span><span class="w"> </span><span class="nx">endpoints</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">HTTP</span><span class="w"> </span><span class="nx">service</span><span class="w"> </span><span class="nx">layer</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">redux</span><span class="o">/</span><span class="w">                </span><span class="err">#</span><span class="w"> </span><span class="nx">Global</span><span class="w"> </span><span class="nx">state</span><span class="w"> </span><span class="p">(</span><span class="nx">Store</span><span class="p">,</span><span class="w"> </span><span class="nx">Slices</span><span class="p">,</span><span class="w"> </span><span class="nx">Thunks</span><span class="p">)</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">screens</span><span class="o">/</span><span class="w">              </span><span class="err">#</span><span class="w"> </span><span class="nx">Feature</span><span class="o">-</span><span class="nx">specific</span><span class="w"> </span><span class="nx">screen</span><span class="w"> </span><span class="nx">modules</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">theme</span><span class="o">/</span><span class="w">                </span><span class="err">#</span><span class="w"> </span><span class="nx">Global</span><span class="w"> </span><span class="nx">design</span><span class="w"> </span><span class="nx">tokens</span><span class="w"> </span><span class="p">(</span><span class="nx">Colors</span><span class="p">,</span><span class="w"> </span><span class="nx">Typography</span><span class="p">)</span>
+<span class="err">├──</span><span class="w"> </span><span class="nx">types</span><span class="o">/</span><span class="w">                </span><span class="err">#</span><span class="w"> </span><span class="nx">Shared</span><span class="w"> </span><span class="nx">TypeScript</span><span class="w"> </span><span class="nx">interfaces</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">types</span>
+<span class="err">└──</span><span class="w"> </span><span class="nx">utils</span><span class="o">/</span><span class="w">                </span><span class="err">#</span><span class="w"> </span><span class="nx">Helper</span><span class="w"> </span><span class="nx">functions</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nx">utilities</span>
+</code></pre></div>
+
+<hr />
+<h2 id="data-flow">🔄 Data Flow</h2>
+<h3 id="api-requests">API Requests</h3>
+<ol>
+<li><strong>Trigger</strong>: A user action in the View calls a method in the <strong>ViewModel</strong>.</li>
+<li><strong>Action</strong>: The ViewModel dispatches an <strong>Async Thunk</strong>.</li>
+<li><strong>Execution</strong>: The Thunk uses the <strong>HTTPService</strong> to call an <strong>Endpoint</strong>.</li>
+<li><strong>State Update</strong>: Upon completion, the Thunk's action is handled by the <strong>Slice's</strong> <code>extraReducers</code>, updating the Redux store.</li>
+<li><strong>Re-render</strong>: The View automatically re-renders with the updated state from the store via <code>useAppSelector</code>.</li>
+</ol>
+<h3 id="persistence">Persistence</h3>
+<p>The app uses <strong>MMKV</strong> (via <code>StorageService.ts</code>) for high-performance key-value storage. Critical data like <code>accessToken</code> is persisted and retrieved during the app's boot sequence.</p>
+<hr />
+<h2 id="type-safety">🛡️ Type Safety</h2>
+<p>The project leverages TypeScript for end-to-end type safety:
+- <strong>Navigation</strong>: Routes and params are typed in <code>routes.ts</code>.
+- <strong>Redux</strong>: Custom <code>useAppSelector</code> and <code>useAppDispatch</code> hooks ensure state and action types are strictly enforced.
+- <strong>API</strong>: Response and request shapes are defined in <code>src/types/types.ts</code>.</p>
+            </article>
+        </div>
+
+        <footer class="doc-footer">
+            <span>Template · Knowledge Transfer Portal</span>
+            <a href="index.html">← Back to index</a>
+        </footer>
+    </div>
+
+    <script>
+        // ── Wrap all tables for horizontal scroll ────────────────
+        document.querySelectorAll('article table').forEach(t => {
+            const wrap = document.createElement('div');
+            wrap.className = 'table-wrap';
+            t.parentNode.insertBefore(wrap, t);
+            wrap.appendChild(t);
+        });
+
+        // ── Auto-build TOC from headings ──────────────────────────
+        (function() {
+            const headings = document.querySelectorAll('#docArticle h2, #docArticle h3');
+            if (headings.length < 2) {
+                document.getElementById('docToc').style.display = 'none';
+                return;
+            }
+            const ul = document.createElement('ul');
+            headings.forEach((h, i) => {
+                if (!h.id) h.id = 'heading-' + i;
+                const li  = document.createElement('li');
+                const a   = document.createElement('a');
+                a.href        = '#' + h.id;
+                a.textContent = h.textContent;
+                if (h.tagName === 'H3') {
+                    const sub = document.createElement('ul');
+                    const subLi = document.createElement('li');
+                    subLi.appendChild(a);
+                    sub.appendChild(subLi);
+                    ul.appendChild(sub);
+                } else {
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+            });
+            document.getElementById('tocList').appendChild(ul);
+
+            // Highlight active heading on scroll
+            const links = ul.querySelectorAll('a');
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        links.forEach(l => l.style.color = '');
+                        const active = ul.querySelector('a[href="#' + e.target.id + '"]');
+                        if (active) active.style.color = 'var(--accent)';
+                    }
+                });
+            }, { rootMargin: '-20% 0px -75% 0px' });
+            headings.forEach(h => obs.observe(h));
+        })();
+
+        // ── Smooth back-to-top on logo click ─────────────────────
+        document.querySelector('.doc-topbar-brand').addEventListener('click', function(e) {
+            if (window.location.pathname.endsWith('index.html') ||
+                window.location.pathname.endsWith('/')) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    </script>
+
+    <!-- Mermaid: loaded last so DOM is fully ready -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            securityLevel: 'loose',
+            themeVariables: {
+                primaryColor: '#1e1e28',
+                primaryTextColor: '#f0f0f5',
+                primaryBorderColor: '#63b3ed',
+                lineColor: '#444455',
+                secondaryColor: '#18181f',
+                tertiaryColor: '#111118',
+                edgeLabelBackground: '#18181f',
+                fontFamily: 'DM Sans, sans-serif'
+            }
+        });
+        // Explicitly render all .mermaid divs after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+        });
+        // Fallback: if DOMContentLoaded already fired (script at bottom)
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+        }
+    </script>
+</body>
+</html>

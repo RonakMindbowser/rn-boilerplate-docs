@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validationschemas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ── Design tokens (mirrors index.html) ─────────────────── */
+        :root {
+            --bg:           #0a0a0f;
+            --surface:      #111118;
+            --surface2:     #18181f;
+            --surface3:     #1e1e28;
+            --border:       rgba(255,255,255,0.07);
+            --border-soft:  rgba(255,255,255,0.04);
+            --accent:       #63b3ed;
+            --accent2:      #f6ad55;
+            --accent3:      #68d391;
+            --accent4:      #9a75ea;
+            --text-primary: #f0f0f5;
+            --text-secondary:#8888a0;
+            --text-dim:     #444455;
+            --code-bg:      #13131c;
+            --radius:       10px;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #1e1e28 transparent;
+        }
+        html::-webkit-scrollbar { width: 6px; }
+        html::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 6px; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            line-height: 1.75;
+            color: var(--text-primary);
+            background: var(--bg);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* ── Layout ──────────────────────────────────────────────── */
+        .page-wrap {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Top bar ─────────────────────────────────────────────── */
+        .doc-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: 52px;
+            background: rgba(10,10,15,0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            gap: 16px;
+        }
+        .doc-topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .doc-topbar-icon {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, #63b3ed, #4299e1);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 12px;
+            color: #000;
+            letter-spacing: -0.5px;
+            box-shadow: 0 2px 10px rgba(99,179,237,0.25);
+            flex-shrink: 0;
+        }
+        .doc-topbar-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .doc-topbar-sep {
+            color: var(--text-dim);
+            font-size: 18px;
+            font-weight: 300;
+        }
+        .doc-topbar-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.3px;
+            font-weight: 400;
+        }
+        .doc-topbar-spacer { flex: 1; }
+        .doc-topbar-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        /* ── Main content ────────────────────────────────────────── */
+        .doc-body {
+            display: flex;
+            flex: 1;
+        }
+
+        /* TOC sidebar */
+        .doc-toc {
+            width: 220px;
+            min-width: 220px;
+            position: sticky;
+            top: 25px;
+            align-self: flex-start;
+            height: calc(100vh - 52px);
+            overflow-y: auto;
+            padding: 28px 16px 28px 24px;
+            border-right: 1px solid var(--border);
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface2) transparent;
+        }
+        .doc-toc::-webkit-scrollbar { width: 4px; }
+        .doc-toc::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+        .doc-toc-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .doc-toc ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .doc-toc ul li a {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 5px 8px;
+            border-radius: 6px;
+            border-left: 2px solid transparent;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .doc-toc ul li a:hover {
+            color: var(--accent);
+            background: rgba(99,179,237,0.06);
+            border-left-color: rgba(99,179,237,0.3);
+        }
+        .doc-toc ul ul { margin-left: 12px; }
+        .doc-toc ul ul li a { font-size: 11px; }
+
+        /* Article */
+        .doc-article {
+            flex: 1;
+            min-width: 0;
+            padding: 48px 56px 80px;
+            max-width: 860px;
+        }
+
+        /* ── Typography ──────────────────────────────────────────── */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            scroll-margin-top: 72px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #f0f0f5 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--accent), var(--accent4));
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            font-size: 17px;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 14px;
+            margin-top: 24px;
+            margin-bottom: 10px;
+            color: var(--accent);
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        strong { color: var(--text-primary); font-weight: 600; }
+        em { color: var(--accent2); font-style: italic; }
+
+        /* ── Links ───────────────────────────────────────────────── */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(99,179,237,0.25);
+            transition: border-color 0.15s, color 0.15s;
+        }
+        a:hover {
+            color: #90cdf4;
+            border-bottom-color: rgba(99,179,237,0.6);
+        }
+
+        /* ── Inline code ─────────────────────────────────────────── */
+        code {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 400;
+            background: var(--surface3);
+            color: var(--accent);
+            padding: 2px 7px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+
+        /* ── Code blocks ─────────────────────────────────────────── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0;
+            margin: 24px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        /* Code block header bar */
+        pre::before {
+            content: '';
+            display: block;
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            background-image: 
+                radial-gradient(circle at 14px 18px, #ff5f57 5px, transparent 5px),
+                radial-gradient(circle at 30px 18px, #febc2e 5px, transparent 5px),
+                radial-gradient(circle at 46px 18px, #28c840 5px, transparent 5px);
+        }
+
+        pre code {
+            display: block;
+            background: none;
+            border: none;
+            padding: 20px 24px;
+            color: #c9d1d9;
+            font-size: 13.5px;
+            line-height: 1.65;
+            overflow-x: auto;
+            white-space: pre;
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface2) transparent;
+        }
+        pre code::-webkit-scrollbar { height: 4px; }
+        pre code::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+
+        /* Codehilite wrapper */
+        .codehilite {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin: 24px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+        .codehilite::before {
+            content: '';
+            display: block;
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            background-image: 
+                radial-gradient(circle at 14px 18px, #ff5f57 5px, transparent 5px),
+                radial-gradient(circle at 30px 18px, #febc2e 5px, transparent 5px),
+                radial-gradient(circle at 46px 18px, #28c840 5px, transparent 5px);
+        }
+        .codehilite pre {
+            background: none;
+            border: none;
+            border-radius: 0;
+            margin: 0;
+            padding: 20px 24px;
+            box-shadow: none;
+        }
+        .codehilite pre::before { display: none; }
+        .codehilite pre code { padding: 0; }
+
+        /* ── Syntax highlighting (dark palette) ──────────────────── */
+        .codehilite .hll { background-color: #2a2a40 }
+        .codehilite .c,
+        .codehilite .cm,
+        .codehilite .c1,
+        .codehilite .cs  { color: #6a737d; font-style: italic }
+        .codehilite .cp  { color: #7ecfc0 }
+        .codehilite .k,
+        .codehilite .kc,
+        .codehilite .kd,
+        .codehilite .kn,
+        .codehilite .kr  { color: #ff79c6; font-weight: 600 }
+        .codehilite .kp  { color: #ff79c6 }
+        .codehilite .kt  { color: #8be9fd }
+        .codehilite .o,
+        .codehilite .ow  { color: #ff79c6 }
+        .codehilite .m,
+        .codehilite .mf,
+        .codehilite .mh,
+        .codehilite .mi,
+        .codehilite .mo,
+        .codehilite .il  { color: #bd93f9 }
+        .codehilite .s,
+        .codehilite .sb,
+        .codehilite .sc,
+        .codehilite .s2,
+        .codehilite .s1,
+        .codehilite .sh,
+        .codehilite .ss  { color: #f1fa8c }
+        .codehilite .sd  { color: #f1fa8c; font-style: italic }
+        .codehilite .se  { color: #ffb86c; font-weight: 600 }
+        .codehilite .si  { color: #ffb86c }
+        .codehilite .sx  { color: #50fa7b }
+        .codehilite .sr  { color: #50fa7b }
+        .codehilite .na  { color: #50fa7b }
+        .codehilite .nb  { color: #8be9fd }
+        .codehilite .bp  { color: #8be9fd }
+        .codehilite .nc  { color: #8be9fd; font-weight: 600 }
+        .codehilite .no  { color: #bd93f9 }
+        .codehilite .nd  { color: #50fa7b }
+        .codehilite .ni  { color: #ffb86c; font-weight: 600 }
+        .codehilite .ne,
+        .codehilite .nf  { color: #50fa7b }
+        .codehilite .nl  { color: #8be9fd; font-weight: 600 }
+        .codehilite .nn  { color: #8be9fd; font-weight: 600 }
+        .codehilite .nt  { color: #ff79c6; font-weight: 600 }
+        .codehilite .nv,
+        .codehilite .vc,
+        .codehilite .vg,
+        .codehilite .vi  { color: #8be9fd }
+        .codehilite .nx  { color: #c9d1d9 }
+        .codehilite .w   { color: #c9d1d9 }
+        .codehilite .err { color: #ff5555 }
+        .codehilite .p   { color: #c9d1d9 }
+        .codehilite .ge  { font-style: italic }
+        .codehilite .gs  { font-weight: bold }
+        .codehilite .gd  { color: #ff5555 }
+        .codehilite .gi  { color: #50fa7b }
+        .codehilite .go  { color: #6a737d }
+        .codehilite .gh  { color: #8be9fd; font-weight: bold }
+        .codehilite .gu  { color: #bd93f9; font-weight: bold }
+        .codehilite .gt  { color: #8be9fd }
+        .codehilite .gr  { color: #ff5555 }
+        .codehilite .gp  { color: #ffb86c; font-weight: bold }
+
+        /* ── Blockquote ───────────────────────────────────────────── */
+        blockquote {
+            border-left: 3px solid var(--accent2);
+            margin: 24px 0;
+            padding: 14px 20px;
+            background: rgba(246,173,85,0.05);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        blockquote strong { color: var(--accent2); }
+        blockquote p { margin: 0; color: inherit; }
+
+        /* ── Tables ──────────────────────────────────────────────── */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 24px 0;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+        }
+        thead tr {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 16px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border-soft);
+            color: var(--text-secondary);
+            vertical-align: top;
+        }
+        tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* ── Lists ───────────────────────────────────────────────── */
+        ul, ol {
+            padding-left: 24px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+        ul li, ol li {
+            margin-bottom: 6px;
+            padding-left: 4px;
+            line-height: 1.75;
+        }
+        ul li::marker { color: var(--accent); }
+        ol li::marker { color: var(--accent); font-family: 'DM Mono', monospace; font-size: 13px; }
+        li > ul, li > ol { margin-top: 6px; margin-bottom: 0; }
+
+        /* ── Horizontal rule ─────────────────────────────────────── */
+        hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 40px 0;
+        }
+
+        /* ── Mermaid diagrams ────────────────────────────────────── */
+        .mermaid {
+            margin: 28px 0;
+            padding: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            overflow-x: auto;
+            min-height: 60px;
+            position: relative;
+        }
+        /* Loading shimmer before mermaid renders */
+        .mermaid:not([data-processed="true"])::after {
+            content: 'Rendering diagram...';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ── Callout / admonition boxes ──────────────────────────── */
+        .callout {
+            display: flex;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: var(--radius);
+            margin: 20px 0;
+            border: 1px solid;
+            font-size: 14px;
+        }
+        .callout-info    { background: rgba(99,179,237,0.07);  border-color: rgba(99,179,237,0.2); }
+        .callout-warning { background: rgba(246,173,85,0.07);  border-color: rgba(246,173,85,0.2); }
+        .callout-success { background: rgba(104,211,145,0.07); border-color: rgba(104,211,145,0.2); }
+
+        /* ── Image ───────────────────────────────────────────────── */
+        img {
+            max-width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin: 12px 0;
+        }
+
+        /* ── Footer ──────────────────────────────────────────────── */
+        .doc-footer {
+            border-top: 1px solid var(--border);
+            padding: 20px 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .doc-footer a {
+            color: var(--accent);
+            border-bottom: none;
+        }
+
+        /* ── Responsive ──────────────────────────────────────────── */
+        @media (max-width: 1000px) {
+            .doc-toc { display: none; }
+            .doc-article { padding: 32px 28px 60px; }
+        }
+        @media (max-width: 640px) {
+            .doc-article { padding: 24px 18px 48px; }
+            h1 { font-size: 24px; }
+            h2 { font-size: 18px; }
+            .doc-topbar { padding: 0 18px; }
+            .doc-footer { padding: 16px 18px; flex-direction: column; gap: 4px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+
+        <div class="doc-body">
+            <!-- Auto-generated TOC -->
+            <nav class="doc-toc" id="docToc">
+                <div class="doc-toc-label">On this page</div>
+                <div id="tocList"></div>
+            </nav>
+
+            <!-- Main article -->
+            <article class="doc-article" id="docArticle">
+                <h1 id="yup-validation-schemas-for-login">Yup Validation Schemas for Login</h1>
+<p>This document provides comprehensive documentation for using Yup validation schemas in the React Native boilerplate for login scenarios.</p>
+<h2 id="overview">Overview</h2>
+<p>The validation system provides three levels of validation schemas:</p>
+<ol>
+<li><strong>Simple Schema</strong> (<code>simpleLoginSchema</code>) - Basic validation for quick development</li>
+<li><strong>Standard Schema</strong> (<code>loginSchema</code>) - Comprehensive validation for production use</li>
+<li><strong>Strict Schema</strong> (<code>strictLoginSchema</code>) - High-security validation for sensitive applications</li>
+</ol>
+<h2 id="available-schemas">Available Schemas</h2>
+<h3 id="1-simple-login-schema-simpleloginschema">1. Simple Login Schema (<code>simpleLoginSchema</code>)</h3>
+<p><strong>Use Case</strong>: Quick development, basic validation
+<strong>Requirements</strong>:
+- Email: Required, valid email format
+- Password: Required, minimum 6 characters</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">simpleLoginSchema</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateLoginData</span><span class="p">(</span><span class="nx">loginData</span><span class="p">,</span><span class="w"> </span><span class="nx">simpleLoginSchema</span><span class="p">);</span>
+</code></pre></div>
+
+<h3 id="2-standard-login-schema-loginschema-default">2. Standard Login Schema (<code>loginSchema</code>) - <strong>DEFAULT</strong></h3>
+<p><strong>Use Case</strong>: Production applications, comprehensive validation
+<strong>Requirements</strong>:</p>
+<p><strong>Email Validation</strong>:
+- Required field
+- Valid email format
+- Maximum 254 characters
+- No leading/trailing spaces
+- Valid domain format
+- No invalid special characters</p>
+<p><strong>Password Validation</strong>:
+- Required field
+- Minimum 8 characters
+- Maximum 128 characters
+- No leading/trailing spaces
+- Must contain: uppercase, lowercase, and number
+- No common passwords (password, 123456, etc.)
+- No repeating characters (aaa, 111, etc.)
+- No sequential characters (123, abc, etc.)</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">loginSchema</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateLoginData</span><span class="p">(</span><span class="nx">loginData</span><span class="p">);</span><span class="w"> </span><span class="c1">// Uses default loginSchema</span>
+</code></pre></div>
+
+<h3 id="3-strict-login-schema-strictloginschema">3. Strict Login Schema (<code>strictLoginSchema</code>)</h3>
+<p><strong>Use Case</strong>: High-security applications, financial services
+<strong>Requirements</strong>:</p>
+<p><strong>Email Validation</strong>:
+- All standard requirements plus additional domain validation</p>
+<p><strong>Password Validation</strong>:
+- Minimum 12 characters
+- Must contain: uppercase, lowercase, number, and special character
+- No personal information (name, email, common words)
+- All other standard requirements</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">strictLoginSchema</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateLoginData</span><span class="p">(</span><span class="nx">loginData</span><span class="p">,</span><span class="w"> </span><span class="nx">strictLoginSchema</span><span class="p">);</span>
+</code></pre></div>
+
+<h2 id="usage-examples">Usage Examples</h2>
+<h3 id="basic-usage">Basic Usage</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">validateLoginData</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">handleLogin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">email</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">password</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateLoginData</span><span class="p">({</span><span class="w"> </span><span class="nx">email</span><span class="p">,</span><span class="w"> </span><span class="nx">password</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">isValid</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Proceed with login</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Login data is valid&#39;</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Handle validation errors</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Validation errors:&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">result</span><span class="p">.</span><span class="nx">errors</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<h3 id="generic-validation-any-schema">Generic Validation (Any Schema)</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">validateData</span><span class="p">,</span><span class="w"> </span><span class="nx">validateField</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">yup</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;yup&#39;</span><span class="p">;</span>
+
+<span class="c1">// Create any custom schema</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">userSchema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">yup</span><span class="p">.</span><span class="nx">object</span><span class="p">().</span><span class="nx">shape</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">yup.string</span><span class="p">().</span><span class="nx">required</span><span class="p">(</span><span class="s1">&#39;Name is required&#39;</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">age</span><span class="o">:</span><span class="w"> </span><span class="kt">yup.number</span><span class="p">().</span><span class="nx">required</span><span class="p">(</span><span class="s1">&#39;Age is required&#39;</span><span class="p">).</span><span class="nx">min</span><span class="p">(</span><span class="mf">18</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Must be 18+&#39;</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">email</span><span class="o">:</span><span class="w"> </span><span class="kt">yup.string</span><span class="p">().</span><span class="nx">email</span><span class="p">(</span><span class="s1">&#39;Invalid email&#39;</span><span class="p">).</span><span class="nx">required</span><span class="p">(</span><span class="s1">&#39;Email is required&#39;</span><span class="p">),</span>
+<span class="p">});</span>
+
+<span class="c1">// Validate complete data</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">userData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;John&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">age</span><span class="o">:</span><span class="w"> </span><span class="kt">25</span><span class="p">,</span><span class="w"> </span><span class="nx">email</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;john@example.com&#39;</span><span class="w"> </span><span class="p">};</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateData</span><span class="p">(</span><span class="nx">userData</span><span class="p">,</span><span class="w"> </span><span class="nx">userSchema</span><span class="p">);</span>
+
+<span class="c1">// Validate single field</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">nameValidation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateField</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;John&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">userSchema</span><span class="p">);</span>
+</code></pre></div>
+
+<h3 id="real-time-field-validation">Real-time Field Validation</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">validateField</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">handleEmailChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">email</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">validation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateField</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">email</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">validation</span><span class="p">.</span><span class="nx">isValid</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">setEmailError</span><span class="p">(</span><span class="nx">validation</span><span class="p">.</span><span class="nx">error</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">setEmailError</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<h3 id="react-integration">React Integration</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">useState</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">validateLoginData</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">LoginComponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">email</span><span class="p">,</span><span class="w"> </span><span class="nx">setEmail</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">password</span><span class="p">,</span><span class="w"> </span><span class="nx">setPassword</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">emailError</span><span class="p">,</span><span class="w"> </span><span class="nx">setEmailError</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">passwordError</span><span class="p">,</span><span class="w"> </span><span class="nx">setPasswordError</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useState</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleSubmit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateLoginData</span><span class="p">({</span><span class="w"> </span><span class="nx">email</span><span class="p">,</span><span class="w"> </span><span class="nx">password</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">isValid</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// Proceed with login</span>
+<span class="w">      </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Login successful&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// Set errors</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">errors</span><span class="p">.</span><span class="nx">email</span><span class="p">)</span><span class="w"> </span><span class="nx">setEmailError</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">errors</span><span class="p">.</span><span class="nx">email</span><span class="p">);</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">errors</span><span class="p">.</span><span class="nx">password</span><span class="p">)</span><span class="w"> </span><span class="nx">setPasswordError</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">errors</span><span class="p">.</span><span class="nx">password</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="c1">// Your login form JSX</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<h2 id="validation-scenarios-covered">Validation Scenarios Covered</h2>
+<h3 id="email-validation">Email Validation</h3>
+<p>✅ <strong>Valid Emails</strong>:
+- <code>user@example.com</code>
+- <code>user.name@domain.co.uk</code>
+- <code>user+tag@example.com</code></p>
+<p>❌ <strong>Invalid Emails</strong>:
+- <code>invalid-email</code>
+- <code>user@</code>
+- <code>@domain.com</code>
+- <code>user@example.com</code> (with spaces)
+- <code>user@example..com</code> (double dots)
+- <code>user@example</code> (no TLD)</p>
+<h3 id="password-validation">Password Validation</h3>
+<p>✅ <strong>Valid Passwords</strong> (Standard Schema):
+- <code>StrongPass123</code>
+- <code>MySecureP@ss1</code>
+- <code>ComplexPassword2024</code></p>
+<p>❌ <strong>Invalid Passwords</strong>:
+- <code>password</code> (too common)
+- <code>123456</code> (too common)
+- <code>abc123</code> (too common)
+- <code>aaa</code> (too short)
+- <code>password123</code> (common + sequential)
+- <code>qwerty</code> (sequential)
+- <code>Password</code> (no numbers)
+- <code>password123</code> (no uppercase)</p>
+<h3 id="validation-order">Validation Order</h3>
+<p>The validation follows a specific order to provide the most relevant error messages:</p>
+<ol>
+<li><strong>Required Field Check</strong>: First checks if the field is empty or contains only whitespace</li>
+<li><strong>Format Validation</strong>: Then validates the format (email, length, etc.)</li>
+<li><strong>Content Validation</strong>: Finally checks content-specific rules (strength, patterns, etc.)</li>
+</ol>
+<p><strong>Examples:</strong>
+- Empty password → "Password is required"
+- Short password → "Password must be at least 8 characters long"
+- Weak password → "Password must contain at least one uppercase letter, one lowercase letter, and one number"</p>
+<h2 id="additional-schemas">Additional Schemas</h2>
+<h3 id="forgot-password-schema">Forgot Password Schema</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">forgotPasswordSchema</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">forgotPasswordSchema</span><span class="p">.</span><span class="nx">validate</span><span class="p">({</span><span class="w"> </span><span class="nx">email</span><span class="w"> </span><span class="p">});</span>
+</code></pre></div>
+
+<h3 id="change-password-schema">Change Password Schema</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">changePasswordSchema</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">changePasswordSchema</span><span class="p">.</span><span class="nx">validate</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">currentPassword</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;oldPassword&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">newPassword</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;newStrongPass123&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">confirmPassword</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;newStrongPass123&#39;</span>
+<span class="p">});</span>
+</code></pre></div>
+
+<h2 id="generic-validation-functions">Generic Validation Functions</h2>
+<p>The library provides two generic functions that work with any Yup schema:</p>
+<h3 id="validatedatatdata-t-schema-yupobjectschemat"><code>validateData&lt;T&gt;(data: T, schema: yup.ObjectSchema&lt;T&gt;)</code></h3>
+<p>Validates complete data objects against any Yup schema.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">validateData</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="c1">// Works with any schema</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateData</span><span class="p">(</span><span class="nx">userData</span><span class="p">,</span><span class="w"> </span><span class="nx">userSchema</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateData</span><span class="p">(</span><span class="nx">loginData</span><span class="p">,</span><span class="w"> </span><span class="nx">loginSchema</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateData</span><span class="p">(</span><span class="nx">productData</span><span class="p">,</span><span class="w"> </span><span class="nx">productSchema</span><span class="p">);</span>
+</code></pre></div>
+
+<h3 id="validatefieldtfield-string-value-unknown-schema-yupobjectschemat"><code>validateField&lt;T&gt;(field: string, value: unknown, schema: yup.ObjectSchema&lt;T&gt;)</code></h3>
+<p>Validates a single field against any Yup schema.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">validateField</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="c1">// Works with any schema</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">emailValidation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateField</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">email</span><span class="p">,</span><span class="w"> </span><span class="nx">loginSchema</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">nameValidation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateField</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="nx">userSchema</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">priceValidation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">validateField</span><span class="p">(</span><span class="s1">&#39;price&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">price</span><span class="p">,</span><span class="w"> </span><span class="nx">productSchema</span><span class="p">);</span>
+</code></pre></div>
+
+<h2 id="error-handling">Error Handling</h2>
+<p>The validation functions return structured error objects:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">// Success case</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="nx">isValid</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">errors</span><span class="o">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+
+<span class="c1">// Error case</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="nx">isValid</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">errors</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">email</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Please enter a valid email address&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">password</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Password must be at least 8 characters long&#39;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h2 id="custom-validation">Custom Validation</h2>
+<p>You can create custom validation by extending the base schemas:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="nx">yup</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;yup&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">loginSchema</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./utils/ValidationSchemas&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">customSchema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">yup</span><span class="p">.</span><span class="nx">object</span><span class="p">().</span><span class="nx">shape</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">email</span><span class="o">:</span><span class="w"> </span><span class="kt">yup</span>
+<span class="w">    </span><span class="p">.</span><span class="kt">string</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">required</span><span class="p">(</span><span class="s1">&#39;Email is required&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">email</span><span class="p">(</span><span class="s1">&#39;Please enter a valid email address&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="s1">&#39;custom-domain&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Email must be from company domain&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">value</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">value</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nx">value</span><span class="p">.</span><span class="nx">endsWith</span><span class="p">(</span><span class="s1">&#39;@company.com&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}),</span>
+<span class="w">  </span><span class="nx">password</span><span class="o">:</span><span class="w"> </span><span class="kt">yup</span>
+<span class="w">    </span><span class="p">.</span><span class="kt">string</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">required</span><span class="p">(</span><span class="s1">&#39;Password is required&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="mf">8</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Password must be at least 8 characters long&#39;</span><span class="p">)</span>
+<span class="p">});</span>
+</code></pre></div>
+            </article>
+        </div>
+
+        <footer class="doc-footer">
+            <span>Template · Knowledge Transfer Portal</span>
+            <a href="index.html">← Back to index</a>
+        </footer>
+    </div>
+
+    <script>
+        // ── Wrap all tables for horizontal scroll ────────────────
+        document.querySelectorAll('article table').forEach(t => {
+            const wrap = document.createElement('div');
+            wrap.className = 'table-wrap';
+            t.parentNode.insertBefore(wrap, t);
+            wrap.appendChild(t);
+        });
+
+        // ── Auto-build TOC from headings ──────────────────────────
+        (function() {
+            const headings = document.querySelectorAll('#docArticle h2, #docArticle h3');
+            if (headings.length < 2) {
+                document.getElementById('docToc').style.display = 'none';
+                return;
+            }
+            const ul = document.createElement('ul');
+            headings.forEach((h, i) => {
+                if (!h.id) h.id = 'heading-' + i;
+                const li  = document.createElement('li');
+                const a   = document.createElement('a');
+                a.href        = '#' + h.id;
+                a.textContent = h.textContent;
+                if (h.tagName === 'H3') {
+                    const sub = document.createElement('ul');
+                    const subLi = document.createElement('li');
+                    subLi.appendChild(a);
+                    sub.appendChild(subLi);
+                    ul.appendChild(sub);
+                } else {
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+            });
+            document.getElementById('tocList').appendChild(ul);
+
+            // Highlight active heading on scroll
+            const links = ul.querySelectorAll('a');
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        links.forEach(l => l.style.color = '');
+                        const active = ul.querySelector('a[href="#' + e.target.id + '"]');
+                        if (active) active.style.color = 'var(--accent)';
+                    }
+                });
+            }, { rootMargin: '-20% 0px -75% 0px' });
+            headings.forEach(h => obs.observe(h));
+        })();
+
+        // ── Smooth back-to-top on logo click ─────────────────────
+        document.querySelector('.doc-topbar-brand').addEventListener('click', function(e) {
+            if (window.location.pathname.endsWith('index.html') ||
+                window.location.pathname.endsWith('/')) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    </script>
+
+    <!-- Mermaid: loaded last so DOM is fully ready -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            securityLevel: 'loose',
+            themeVariables: {
+                primaryColor: '#1e1e28',
+                primaryTextColor: '#f0f0f5',
+                primaryBorderColor: '#63b3ed',
+                lineColor: '#444455',
+                secondaryColor: '#18181f',
+                tertiaryColor: '#111118',
+                edgeLabelBackground: '#18181f',
+                fontFamily: 'DM Sans, sans-serif'
+            }
+        });
+        // Explicitly render all .mermaid divs after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+        });
+        // Fallback: if DOMContentLoaded already fired (script at bottom)
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+        }
+    </script>
+</body>
+</html>

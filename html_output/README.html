@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Readme</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ── Design tokens (mirrors index.html) ─────────────────── */
+        :root {
+            --bg:           #0a0a0f;
+            --surface:      #111118;
+            --surface2:     #18181f;
+            --surface3:     #1e1e28;
+            --border:       rgba(255,255,255,0.07);
+            --border-soft:  rgba(255,255,255,0.04);
+            --accent:       #63b3ed;
+            --accent2:      #f6ad55;
+            --accent3:      #68d391;
+            --accent4:      #9a75ea;
+            --text-primary: #f0f0f5;
+            --text-secondary:#8888a0;
+            --text-dim:     #444455;
+            --code-bg:      #13131c;
+            --radius:       10px;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #1e1e28 transparent;
+        }
+        html::-webkit-scrollbar { width: 6px; }
+        html::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 6px; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            line-height: 1.75;
+            color: var(--text-primary);
+            background: var(--bg);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* ── Layout ──────────────────────────────────────────────── */
+        .page-wrap {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Top bar ─────────────────────────────────────────────── */
+        .doc-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: 52px;
+            background: rgba(10,10,15,0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            gap: 16px;
+        }
+        .doc-topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .doc-topbar-icon {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, #63b3ed, #4299e1);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 12px;
+            color: #000;
+            letter-spacing: -0.5px;
+            box-shadow: 0 2px 10px rgba(99,179,237,0.25);
+            flex-shrink: 0;
+        }
+        .doc-topbar-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .doc-topbar-sep {
+            color: var(--text-dim);
+            font-size: 18px;
+            font-weight: 300;
+        }
+        .doc-topbar-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.3px;
+            font-weight: 400;
+        }
+        .doc-topbar-spacer { flex: 1; }
+        .doc-topbar-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        /* ── Main content ────────────────────────────────────────── */
+        .doc-body {
+            display: flex;
+            flex: 1;
+        }
+
+        /* TOC sidebar */
+        .doc-toc {
+            width: 220px;
+            min-width: 220px;
+            position: sticky;
+            top: 25px;
+            align-self: flex-start;
+            height: calc(100vh - 52px);
+            overflow-y: auto;
+            padding: 28px 16px 28px 24px;
+            border-right: 1px solid var(--border);
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface2) transparent;
+        }
+        .doc-toc::-webkit-scrollbar { width: 4px; }
+        .doc-toc::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+        .doc-toc-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .doc-toc ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .doc-toc ul li a {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 5px 8px;
+            border-radius: 6px;
+            border-left: 2px solid transparent;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .doc-toc ul li a:hover {
+            color: var(--accent);
+            background: rgba(99,179,237,0.06);
+            border-left-color: rgba(99,179,237,0.3);
+        }
+        .doc-toc ul ul { margin-left: 12px; }
+        .doc-toc ul ul li a { font-size: 11px; }
+
+        /* Article */
+        .doc-article {
+            flex: 1;
+            min-width: 0;
+            padding: 48px 56px 80px;
+            max-width: 860px;
+        }
+
+        /* ── Typography ──────────────────────────────────────────── */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            scroll-margin-top: 72px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #f0f0f5 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--accent), var(--accent4));
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            font-size: 17px;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 14px;
+            margin-top: 24px;
+            margin-bottom: 10px;
+            color: var(--accent);
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        strong { color: var(--text-primary); font-weight: 600; }
+        em { color: var(--accent2); font-style: italic; }
+
+        /* ── Links ───────────────────────────────────────────────── */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(99,179,237,0.25);
+            transition: border-color 0.15s, color 0.15s;
+        }
+        a:hover {
+            color: #90cdf4;
+            border-bottom-color: rgba(99,179,237,0.6);
+        }
+
+        /* ── Inline code ─────────────────────────────────────────── */
+        code {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 400;
+            background: var(--surface3);
+            color: var(--accent);
+            padding: 2px 7px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+
+        /* ── Code blocks ─────────────────────────────────────────── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0;
+            margin: 24px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        /* Code block header bar */
+        pre::before {
+            content: '';
+            display: block;
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            background-image: 
+                radial-gradient(circle at 14px 18px, #ff5f57 5px, transparent 5px),
+                radial-gradient(circle at 30px 18px, #febc2e 5px, transparent 5px),
+                radial-gradient(circle at 46px 18px, #28c840 5px, transparent 5px);
+        }
+
+        pre code {
+            display: block;
+            background: none;
+            border: none;
+            padding: 20px 24px;
+            color: #c9d1d9;
+            font-size: 13.5px;
+            line-height: 1.65;
+            overflow-x: auto;
+            white-space: pre;
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface2) transparent;
+        }
+        pre code::-webkit-scrollbar { height: 4px; }
+        pre code::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+
+        /* Codehilite wrapper */
+        .codehilite {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin: 24px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+        .codehilite::before {
+            content: '';
+            display: block;
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            background-image: 
+                radial-gradient(circle at 14px 18px, #ff5f57 5px, transparent 5px),
+                radial-gradient(circle at 30px 18px, #febc2e 5px, transparent 5px),
+                radial-gradient(circle at 46px 18px, #28c840 5px, transparent 5px);
+        }
+        .codehilite pre {
+            background: none;
+            border: none;
+            border-radius: 0;
+            margin: 0;
+            padding: 20px 24px;
+            box-shadow: none;
+        }
+        .codehilite pre::before { display: none; }
+        .codehilite pre code { padding: 0; }
+
+        /* ── Syntax highlighting (dark palette) ──────────────────── */
+        .codehilite .hll { background-color: #2a2a40 }
+        .codehilite .c,
+        .codehilite .cm,
+        .codehilite .c1,
+        .codehilite .cs  { color: #6a737d; font-style: italic }
+        .codehilite .cp  { color: #7ecfc0 }
+        .codehilite .k,
+        .codehilite .kc,
+        .codehilite .kd,
+        .codehilite .kn,
+        .codehilite .kr  { color: #ff79c6; font-weight: 600 }
+        .codehilite .kp  { color: #ff79c6 }
+        .codehilite .kt  { color: #8be9fd }
+        .codehilite .o,
+        .codehilite .ow  { color: #ff79c6 }
+        .codehilite .m,
+        .codehilite .mf,
+        .codehilite .mh,
+        .codehilite .mi,
+        .codehilite .mo,
+        .codehilite .il  { color: #bd93f9 }
+        .codehilite .s,
+        .codehilite .sb,
+        .codehilite .sc,
+        .codehilite .s2,
+        .codehilite .s1,
+        .codehilite .sh,
+        .codehilite .ss  { color: #f1fa8c }
+        .codehilite .sd  { color: #f1fa8c; font-style: italic }
+        .codehilite .se  { color: #ffb86c; font-weight: 600 }
+        .codehilite .si  { color: #ffb86c }
+        .codehilite .sx  { color: #50fa7b }
+        .codehilite .sr  { color: #50fa7b }
+        .codehilite .na  { color: #50fa7b }
+        .codehilite .nb  { color: #8be9fd }
+        .codehilite .bp  { color: #8be9fd }
+        .codehilite .nc  { color: #8be9fd; font-weight: 600 }
+        .codehilite .no  { color: #bd93f9 }
+        .codehilite .nd  { color: #50fa7b }
+        .codehilite .ni  { color: #ffb86c; font-weight: 600 }
+        .codehilite .ne,
+        .codehilite .nf  { color: #50fa7b }
+        .codehilite .nl  { color: #8be9fd; font-weight: 600 }
+        .codehilite .nn  { color: #8be9fd; font-weight: 600 }
+        .codehilite .nt  { color: #ff79c6; font-weight: 600 }
+        .codehilite .nv,
+        .codehilite .vc,
+        .codehilite .vg,
+        .codehilite .vi  { color: #8be9fd }
+        .codehilite .nx  { color: #c9d1d9 }
+        .codehilite .w   { color: #c9d1d9 }
+        .codehilite .err { color: #ff5555 }
+        .codehilite .p   { color: #c9d1d9 }
+        .codehilite .ge  { font-style: italic }
+        .codehilite .gs  { font-weight: bold }
+        .codehilite .gd  { color: #ff5555 }
+        .codehilite .gi  { color: #50fa7b }
+        .codehilite .go  { color: #6a737d }
+        .codehilite .gh  { color: #8be9fd; font-weight: bold }
+        .codehilite .gu  { color: #bd93f9; font-weight: bold }
+        .codehilite .gt  { color: #8be9fd }
+        .codehilite .gr  { color: #ff5555 }
+        .codehilite .gp  { color: #ffb86c; font-weight: bold }
+
+        /* ── Blockquote ───────────────────────────────────────────── */
+        blockquote {
+            border-left: 3px solid var(--accent2);
+            margin: 24px 0;
+            padding: 14px 20px;
+            background: rgba(246,173,85,0.05);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        blockquote strong { color: var(--accent2); }
+        blockquote p { margin: 0; color: inherit; }
+
+        /* ── Tables ──────────────────────────────────────────────── */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 24px 0;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+        }
+        thead tr {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 16px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border-soft);
+            color: var(--text-secondary);
+            vertical-align: top;
+        }
+        tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* ── Lists ───────────────────────────────────────────────── */
+        ul, ol {
+            padding-left: 24px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+        ul li, ol li {
+            margin-bottom: 6px;
+            padding-left: 4px;
+            line-height: 1.75;
+        }
+        ul li::marker { color: var(--accent); }
+        ol li::marker { color: var(--accent); font-family: 'DM Mono', monospace; font-size: 13px; }
+        li > ul, li > ol { margin-top: 6px; margin-bottom: 0; }
+
+        /* ── Horizontal rule ─────────────────────────────────────── */
+        hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 40px 0;
+        }
+
+        /* ── Mermaid diagrams ────────────────────────────────────── */
+        .mermaid {
+            margin: 28px 0;
+            padding: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            overflow-x: auto;
+            min-height: 60px;
+            position: relative;
+        }
+        /* Loading shimmer before mermaid renders */
+        .mermaid:not([data-processed="true"])::after {
+            content: 'Rendering diagram...';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ── Callout / admonition boxes ──────────────────────────── */
+        .callout {
+            display: flex;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: var(--radius);
+            margin: 20px 0;
+            border: 1px solid;
+            font-size: 14px;
+        }
+        .callout-info    { background: rgba(99,179,237,0.07);  border-color: rgba(99,179,237,0.2); }
+        .callout-warning { background: rgba(246,173,85,0.07);  border-color: rgba(246,173,85,0.2); }
+        .callout-success { background: rgba(104,211,145,0.07); border-color: rgba(104,211,145,0.2); }
+
+        /* ── Image ───────────────────────────────────────────────── */
+        img {
+            max-width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin: 12px 0;
+        }
+
+        /* ── Footer ──────────────────────────────────────────────── */
+        .doc-footer {
+            border-top: 1px solid var(--border);
+            padding: 20px 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .doc-footer a {
+            color: var(--accent);
+            border-bottom: none;
+        }
+
+        /* ── Responsive ──────────────────────────────────────────── */
+        @media (max-width: 1000px) {
+            .doc-toc { display: none; }
+            .doc-article { padding: 32px 28px 60px; }
+        }
+        @media (max-width: 640px) {
+            .doc-article { padding: 24px 18px 48px; }
+            h1 { font-size: 24px; }
+            h2 { font-size: 18px; }
+            .doc-topbar { padding: 0 18px; }
+            .doc-footer { padding: 16px 18px; flex-direction: column; gap: 4px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+
+        <div class="doc-body">
+            <!-- Auto-generated TOC -->
+            <nav class="doc-toc" id="docToc">
+                <div class="doc-toc-label">On this page</div>
+                <div id="tocList"></div>
+            </nav>
+
+            <!-- Main article -->
+            <article class="doc-article" id="docArticle">
+                <h1 id="react-native-typescript-boilerplate">React Native TypeScript Boilerplate</h1>
+<p>A comprehensive, production-ready React Native boilerplate built with TypeScript, featuring modern architecture patterns, robust state management, and enterprise-grade tooling.</p>
+<h2 id="overview">📋 Overview</h2>
+<p>This boilerplate provides a solid foundation for building scalable React Native applications with TypeScript. It includes pre-configured navigation, state management, API services, validation, theming, and internationalization out of the box.</p>
+<h3 id="key-features">Key Features</h3>
+<ul>
+<li><strong>TypeScript</strong> - Full type safety and better developer experience</li>
+<li><strong>Redux Toolkit</strong> - Modern state management with RTK</li>
+<li><strong>React Navigation</strong> - Type-safe navigation with stack and tab navigators</li>
+<li><strong>Firebase Integration</strong> - Analytics and crashlytics</li>
+<li><strong>Internationalization</strong> - Multi-language support with i18next</li>
+<li><strong>Theme System</strong> - Dark/Light mode support</li>
+<li><strong>Form Validation</strong> - Comprehensive validation with Yup</li>
+<li><strong>HTTP Services</strong> - Axios-based API client with interceptors</li>
+<li><strong>Code Generation</strong> - CLI tools for rapid development</li>
+<li><strong>Testing Setup</strong> - Jest and React Native Testing Library</li>
+<li><strong>Code Quality</strong> - ESLint, Prettier, and Husky</li>
+</ul>
+<h2 id="basic-requirements">🚀 Basic Requirements</h2>
+<ul>
+<li><strong>Node.js</strong> &gt;= 20.0.0</li>
+<li><strong>React Native CLI</strong> or <strong>Expo CLI</strong></li>
+<li><strong>Xcode</strong> (for iOS development)</li>
+<li><strong>Android Studio</strong> (for Android development)</li>
+<li><strong>CocoaPods</strong> (for iOS dependencies)</li>
+</ul>
+<h3 id="development-environment">Development Environment</h3>
+<ul>
+<li><strong>macOS</strong> (recommended for iOS development)</li>
+<li><strong>Windows/Linux</strong> (Android development)</li>
+</ul>
+<h2 id="highlights">⭐ Highlights</h2>
+<h3 id="core-technologies">Core Technologies</h3>
+<ul>
+<li><strong>React Native 0.83.0</strong> - Latest stable version</li>
+<li><strong>TypeScript 5.8.3</strong> - Full type safety</li>
+<li><strong>React 19.2.0</strong> - Latest React version</li>
+<li><strong>Redux Toolkit 2.10.1</strong> - Modern Redux with RTK</li>
+<li><strong>React Navigation 7.x</strong> - Type-safe navigation</li>
+</ul>
+<h3 id="utilities-services">Utilities &amp; Services</h3>
+<ul>
+<li><strong>Axios</strong> - HTTP client with interceptors and token refresh</li>
+<li><strong>Yup</strong> - Schema validation for forms</li>
+<li><strong>i18next</strong> - Internationalization</li>
+<li><strong>MMKV</strong> - Fast key-value storage</li>
+<li><strong>React Native Keychain</strong> - Secure storage</li>
+<li><strong>Toast Messages</strong> - User feedback</li>
+<li><strong>Error Boundaries</strong> - Error handling</li>
+</ul>
+<h3 id="developer-tools">Developer Tools</h3>
+<ul>
+<li><strong>ESLint</strong> - Code linting</li>
+<li><strong>Prettier</strong> - Code formatting</li>
+<li><strong>Husky</strong> - Git hooks</li>
+<li><strong>Jest</strong> - Testing framework</li>
+<li><strong>TypeScript ESLint</strong> - TypeScript-specific linting</li>
+</ul>
+<h2 id="developer-experience">🛠️ Developer Experience</h2>
+<h3 id="code-generation-scripts">Code Generation Scripts</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Generate MVC screen structure</span>
+npm<span class="w"> </span>run<span class="w"> </span>generateMVCScreen<span class="w"> </span>ScreenName
+
+<span class="c1"># Generate Redux slice</span>
+npm<span class="w"> </span>run<span class="w"> </span>generateReduxSlice<span class="w"> </span>SliceName
+
+<span class="c1"># Generate React Native component</span>
+npm<span class="w"> </span>run<span class="w"> </span>generateRNComponent<span class="w"> </span>ComponentName
+</code></pre></div>
+
+<h3 id="code-quality">Code Quality</h3>
+<ul>
+<li><strong>Automatic formatting</strong> with Prettier</li>
+<li><strong>Linting</strong> with ESLint</li>
+<li><strong>Pre-commit hooks</strong> with Husky</li>
+<li><strong>Type checking</strong> with TypeScript</li>
+<li><strong>Testing</strong> with Jest and React Native Testing Library</li>
+</ul>
+<h3 id="hot-reload-development">Hot Reload &amp; Development</h3>
+<ul>
+<li><strong>Fast Refresh</strong> for instant updates</li>
+<li><strong>Metro bundler</strong> configuration</li>
+<li><strong>Development builds</strong> for both platforms</li>
+<li><strong>Debug configurations</strong> for VS Code</li>
+</ul>
+<h2 id="directory-structure">📁 Directory Structure</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">src</span><span class="o">/</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">assets</span><span class="o">/</span><span class="w">                 </span><span class="c1"># Images, fonts, and static assets</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">components</span><span class="o">/</span><span class="w">             </span><span class="c1"># Reusable UI components</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">ErrorHandler</span><span class="o">.</span><span class="n">tsx</span><span class="w">   </span><span class="c1"># Error boundary component</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">Flatlist</span><span class="o">.</span><span class="n">tsx</span><span class="w">       </span><span class="c1"># Custom flatlist component</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">Header</span><span class="o">.</span><span class="n">tsx</span><span class="w">         </span><span class="c1"># Navigation header</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">Image</span><span class="o">.</span><span class="n">tsx</span><span class="w">          </span><span class="c1"># Custom image component</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">ReusableButton</span><span class="o">.</span><span class="n">tsx</span><span class="w"> </span><span class="c1"># Button component</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">Text</span><span class="o">.</span><span class="n">tsx</span><span class="w">           </span><span class="c1"># Custom text component</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">TextInput</span><span class="o">.</span><span class="n">tsx</span><span class="w">      </span><span class="c1"># Input component</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">contexts</span><span class="o">/</span><span class="w">              </span><span class="c1"># React contexts</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">ThemeContext</span><span class="o">.</span><span class="n">tsx</span><span class="w">   </span><span class="c1"># Theme provider</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">hocs</span><span class="o">/</span><span class="w">                  </span><span class="c1"># Higher-order components</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">LanguageProvider</span><span class="o">.</span><span class="n">ts</span><span class="w"> </span><span class="c1"># i18n provider</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">Loader</span><span class="o">.</span><span class="n">tsx</span><span class="w">         </span><span class="c1"># Loading component</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">hooks</span><span class="o">/</span><span class="w">                 </span><span class="c1"># Custom React hooks</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">useTypedSelector</span><span class="o">.</span><span class="n">ts</span><span class="w"> </span><span class="c1"># Typed Redux selector</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">language</span><span class="o">/</span><span class="w">              </span><span class="c1"># Internationalization</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">en</span><span class="o">.</span><span class="n">json</span><span class="w">           </span><span class="c1"># English translations</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">navigators</span><span class="o">/</span><span class="w">            </span><span class="c1"># Navigation configuration</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">AuthStackNavigator</span><span class="o">.</span><span class="n">tsx</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">HomeTabNavigator</span><span class="o">.</span><span class="n">tsx</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">MainStackNavigator</span><span class="o">.</span><span class="n">tsx</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">RootStackNavigator</span><span class="o">.</span><span class="n">tsx</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">routes</span><span class="o">.</span><span class="n">ts</span><span class="w">         </span><span class="c1"># Route definitions</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">networkConfig</span><span class="o">/</span><span class="w">         </span><span class="c1"># API configuration</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">Endpoints</span><span class="o">.</span><span class="n">ts</span><span class="w">      </span><span class="c1"># API endpoints</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">HttpServices</span><span class="o">.</span><span class="n">ts</span><span class="w">   </span><span class="c1"># HTTP client</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">redux</span><span class="o">/</span><span class="w">                </span><span class="c1"># State management</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">app</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">store</span><span class="o">.</span><span class="n">ts</span><span class="w">      </span><span class="c1"># Redux store</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">constants</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">index</span><span class="o">.</span><span class="n">ts</span><span class="w">      </span><span class="c1"># Redux constants</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">reducer</span><span class="o">/</span><span class="w">          </span><span class="c1"># Redux slices</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">AppSlice</span><span class="o">/</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">CounterSlice</span><span class="o">/</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">DashboardSlice</span><span class="o">/</span>
+<span class="err">│</span><span class="w">       </span><span class="err">└──</span><span class="w"> </span><span class="n">UserSlice</span><span class="o">/</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">screens</span><span class="o">/</span><span class="w">              </span><span class="c1"># Application screens</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">AuthScreens</span><span class="o">/</span><span class="w">      </span><span class="c1"># Authentication screens</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">Login</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">DetailScreen</span><span class="o">/</span><span class="w">     </span><span class="c1"># Detail screens</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">ErrorScreen</span><span class="o">/</span><span class="w">      </span><span class="c1"># Error handling screens</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">Home</span><span class="o">/</span><span class="w">             </span><span class="c1"># Home screens</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">theme</span><span class="o">/</span><span class="w">                </span><span class="c1"># Theming</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">colors</span><span class="o">.</span><span class="n">ts</span><span class="w">         </span><span class="c1"># Color definitions</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">types</span><span class="o">/</span><span class="w">                </span><span class="c1"># TypeScript type definitions</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">types</span><span class="o">.</span><span class="n">ts</span>
+<span class="err">└──</span><span class="w"> </span><span class="n">utils</span><span class="o">/</span><span class="w">                </span><span class="c1"># Utility functions</span>
+<span class="w">    </span><span class="err">├──</span><span class="w"> </span><span class="n">Constants</span><span class="o">.</span><span class="n">ts</span><span class="w">      </span><span class="c1"># App constants</span>
+<span class="w">    </span><span class="err">├──</span><span class="w"> </span><span class="n">Dimensions</span><span class="o">.</span><span class="n">ts</span><span class="w">     </span><span class="c1"># Responsive dimensions</span>
+<span class="w">    </span><span class="err">├──</span><span class="w"> </span><span class="n">ImageConstants</span><span class="o">.</span><span class="n">ts</span><span class="w"> </span><span class="c1"># Image constants</span>
+<span class="w">    </span><span class="err">├──</span><span class="w"> </span><span class="n">SecureLogger</span><span class="o">.</span><span class="n">ts</span><span class="w">   </span><span class="c1"># Secure logging</span>
+<span class="w">    </span><span class="err">├──</span><span class="w"> </span><span class="n">SizeUtility</span><span class="o">.</span><span class="n">ts</span><span class="w">    </span><span class="c1"># Size utilities</span>
+<span class="w">    </span><span class="err">├──</span><span class="w"> </span><span class="n">StorageService</span><span class="o">.</span><span class="n">ts</span><span class="w"> </span><span class="c1"># Storage utilities</span>
+<span class="w">    </span><span class="err">├──</span><span class="w"> </span><span class="n">Typography</span><span class="o">.</span><span class="n">ts</span><span class="w">     </span><span class="c1"># Typography styles</span>
+<span class="w">    </span><span class="err">├──</span><span class="w"> </span><span class="n">ValidationSchemas</span><span class="o">.</span><span class="n">ts</span><span class="w"> </span><span class="c1"># Form validation schemas</span>
+<span class="w">    </span><span class="err">└──</span><span class="w"> </span><span class="n">ValidationUtils</span><span class="o">.</span><span class="n">ts</span><span class="w"> </span><span class="c1"># Validation utilities</span>
+</code></pre></div>
+
+<h2 id="logging-strategy">📝 Logging Strategy</h2>
+<p>The boilerplate includes a secure, centralized logging system implemented in <code>src/utils/SecureLogger.ts</code>. Always prefer this over <code>console.log</code>.</p>
+<h3 id="implementation">Implementation</h3>
+<ul>
+<li><strong>SecureLogger</strong> singleton exposed as <code>logger</code>.</li>
+<li><strong>Initialization helper</strong> <code>initializeLogger</code> to load configuration and perform cleanup.</li>
+<li><strong>Log levels</strong>: <code>ERROR</code>, <code>WARN</code>, <code>INFO</code>, <code>DEBUG</code> (see <code>LOG_LEVELS</code>).</li>
+<li><strong>Storage</strong>: logs are stored via <code>StorageService</code> / MMKV with automatic rotation and retention.</li>
+<li><strong>Sanitization</strong>: PHI and sensitive fields are automatically redacted before persisting.</li>
+</ul>
+<h3 id="environment-behaviour">Environment behaviour</h3>
+<ul>
+<li><strong>Development</strong>: console logging enabled, debug logs enabled, lower retention (about 500 stored logs).</li>
+<li><strong>Production</strong>: console logging disabled, debug logs disabled, higher retention (about 1000 stored logs).</li>
+</ul>
+<h3 id="usage">Usage</h3>
+<ul>
+<li>Import in any file:</li>
+<li><code>import { logger, initializeLogger } from 'utils/SecureLogger';</code></li>
+<li>Initialize once at app startup (for example in <code>App.tsx</code>) before other modules rely on logging.</li>
+<li>Use appropriate methods:</li>
+<li><code>logger.error(message, context?)</code> for failures that need attention.</li>
+<li><code>logger.warn(message, context?)</code> for non-fatal issues.</li>
+<li><code>logger.info(message, context?)</code> for business events and app flow.</li>
+<li><code>logger.debug(message, context?)</code> for noisy troubleshooting details (development only).</li>
+</ul>
+<h2 id="getting-started">🚀 Getting Started</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ol>
+<li>Install Node.js (&gt;= 20.0.0)</li>
+<li>Install React Native CLI: <code>npm install -g @react-native-community/cli</code></li>
+<li>Install Xcode (for iOS development)</li>
+<li>Install Android Studio (for Android development)</li>
+</ol>
+<h3 id="installation">Installation</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Clone the repository</span>
+git<span class="w"> </span>clone<span class="w"> </span>&lt;repository-url&gt;
+<span class="nb">cd</span><span class="w"> </span>reactnative-boilerplate-typescript
+
+<span class="c1"># Install dependencies</span>
+npm<span class="w"> </span>install
+
+<span class="c1"># Install iOS dependencies (macOS only)</span>
+<span class="nb">cd</span><span class="w"> </span>ios<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pod<span class="w"> </span>install<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
+</code></pre></div>
+
+<h2 id="how-to-create-a-new-project-using-this-boilerplate">🏗️ How to Create a New Project Using This Boilerplate</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Clone the boilerplate</span>
+git<span class="w"> </span>clone<span class="w"> </span>&lt;repository-url&gt;<span class="w"> </span>my-new-project
+<span class="nb">cd</span><span class="w"> </span>my-new-project
+
+<span class="c1"># Remove git history and start fresh</span>
+rm<span class="w"> </span>-rf<span class="w"> </span>.git
+git<span class="w"> </span>init
+
+<span class="c1"># Update package.json with your project details</span>
+<span class="c1"># Update app.json with your app configuration</span>
+<span class="c1"># Update iOS/Android bundle identifiers</span>
+
+<span class="c1"># Install dependencies</span>
+npm<span class="w"> </span>install
+</code></pre></div>
+
+<h3 id="customization-steps">Customization Steps</h3>
+<ol>
+<li><strong>Update App Configuration</strong></li>
+<li>Modify <code>app.json</code> with your app details</li>
+<li>Update bundle identifiers in iOS/Android</li>
+<li>
+<p>Configure Firebase project settings</p>
+</li>
+<li>
+<p><strong>Update Dependencies</strong></p>
+</li>
+<li>Review and update package.json dependencies</li>
+<li>
+<p>Configure native dependencies</p>
+</li>
+<li>
+<p><strong>Customize Theme</strong></p>
+</li>
+<li>Update colors in <code>src/theme/colors.ts</code></li>
+<li>
+<p>Modify typography in <code>src/utils/Typography.ts</code></p>
+</li>
+<li>
+<p><strong>Configure API</strong></p>
+</li>
+<li>Update endpoints in <code>src/networkConfig/Endpoints.ts</code></li>
+<li>Configure base URLs and authentication</li>
+</ol>
+<h2 id="run-the-project">▶️ Run the Project</h2>
+<h3 id="development-mode">Development Mode</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Start Metro bundler</span>
+npm<span class="w"> </span>start
+
+<span class="c1"># Run on iOS (macOS only)</span>
+npm<span class="w"> </span>run<span class="w"> </span>ios
+
+<span class="c1"># Run on Android</span>
+npm<span class="w"> </span>run<span class="w"> </span>android
+</code></pre></div>
+
+<h3 id="production-build">Production Build</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># iOS Production Build</span>
+npm<span class="w"> </span>run<span class="w"> </span>ios:archive:template:release
+
+<span class="c1"># Android Production Build</span>
+npm<span class="w"> </span>run<span class="w"> </span>android:prod-release
+</code></pre></div>
+
+<h2 id="running-with-multiple-environments">🌍 Running with Multiple Environments</h2>
+<p>This boilerplate supports multiple environments for different deployment stages:</p>
+<h3 id="environment-configuration">Environment Configuration</h3>
+<ul>
+<li><strong>Development</strong> - Local development</li>
+<li><strong>QA</strong> - Quality assurance testing</li>
+<li><strong>Staging</strong> - Pre-production testing</li>
+<li><strong>UAT</strong> - User acceptance testing</li>
+<li><strong>Production</strong> - Live application</li>
+</ul>
+<h3 id="android-commands">Android Commands</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Development</span>
+npm<span class="w"> </span>run<span class="w"> </span>android:dev
+npm<span class="w"> </span>run<span class="w"> </span>android:dev-release
+
+<span class="c1"># QA</span>
+npm<span class="w"> </span>run<span class="w"> </span>android:qa
+npm<span class="w"> </span>run<span class="w"> </span>android:qa-release
+
+<span class="c1"># Staging</span>
+npm<span class="w"> </span>run<span class="w"> </span>android:staging
+npm<span class="w"> </span>run<span class="w"> </span>android:staging-release
+
+<span class="c1"># UAT</span>
+npm<span class="w"> </span>run<span class="w"> </span>android:uat
+npm<span class="w"> </span>run<span class="w"> </span>android:uat-release
+
+<span class="c1"># Production</span>
+npm<span class="w"> </span>run<span class="w"> </span>android:prod
+npm<span class="w"> </span>run<span class="w"> </span>android:prod-release
+</code></pre></div>
+
+<h3 id="ios-commands">iOS Commands</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Development</span>
+npm<span class="w"> </span>run<span class="w"> </span>ios:run:templateDevelopment:debug
+npm<span class="w"> </span>run<span class="w"> </span>ios:run:templateDevelopment:release
+
+<span class="c1"># QA</span>
+npm<span class="w"> </span>run<span class="w"> </span>ios:run:templateQA:debug
+npm<span class="w"> </span>run<span class="w"> </span>ios:run:templateQA:release
+
+<span class="c1"># Staging</span>
+npm<span class="w"> </span>run<span class="w"> </span>ios:run:templateStaging:debug
+npm<span class="w"> </span>run<span class="w"> </span>ios:run:templateStaging:release
+
+<span class="c1"># UAT</span>
+npm<span class="w"> </span>run<span class="w"> </span>ios:run:templateUAT:debug
+npm<span class="w"> </span>run<span class="w"> </span>ios:run:templateUAT:release
+
+<span class="c1"># Production</span>
+npm<span class="w"> </span>run<span class="w"> </span>ios:run:template:debug
+npm<span class="w"> </span>run<span class="w"> </span>ios:run:template:release
+</code></pre></div>
+
+<h3 id="environment-specific-files">Environment-Specific Files</h3>
+<ul>
+<li><strong>iOS</strong>: Different schemes and configurations</li>
+<li><strong>Android</strong>: Different build variants and flavors</li>
+<li><strong>Firebase</strong>: Environment-specific Google Services files</li>
+<li><strong>Configuration</strong>: Environment variables and settings</li>
+</ul>
+<h2 id="features-overview">📱 Features Overview</h2>
+<h3 id="authentication">Authentication</h3>
+<ul>
+<li>Login/logout functionality</li>
+<li>Token-based authentication</li>
+<li>Secure storage with Keychain</li>
+<li>Automatic token refresh</li>
+</ul>
+<h3 id="navigation">Navigation</h3>
+<ul>
+<li>Stack navigation for authentication</li>
+<li>Tab navigation for main app</li>
+<li>Type-safe navigation with TypeScript</li>
+<li>Deep linking support</li>
+</ul>
+<h3 id="state-management">State Management</h3>
+<ul>
+<li>Redux Toolkit for global state</li>
+<li>RTK Query for API state management</li>
+<li>Type-safe selectors and actions</li>
+<li>DevTools integration</li>
+</ul>
+<h3 id="api-integration">API Integration</h3>
+<ul>
+<li>Axios-based HTTP client</li>
+<li>Request/response interceptors</li>
+<li>Automatic error handling</li>
+<li>Token refresh mechanism</li>
+</ul>
+<h3 id="form-handling">Form Handling</h3>
+<ul>
+<li>Yup validation schemas</li>
+<li>Real-time validation</li>
+<li>Error message handling</li>
+<li>Type-safe form state</li>
+</ul>
+<h3 id="theming">Theming</h3>
+<ul>
+<li>Dark/Light mode support</li>
+<li>Dynamic theme switching</li>
+<li>Consistent color system</li>
+<li>Typography system</li>
+</ul>
+<h3 id="internationalization">Internationalization</h3>
+<ul>
+<li>Multi-language support</li>
+<li>Dynamic language switching</li>
+<li>Type-safe translations</li>
+<li>Pluralization support</li>
+</ul>
+<h2 id="testing">🧪 Testing</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Run all tests</span>
+npm<span class="w"> </span><span class="nb">test</span>
+
+<span class="c1"># Run tests in watch mode</span>
+npm<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--<span class="w"> </span>--watch
+
+<span class="c1"># Run tests with coverage</span>
+npm<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--<span class="w"> </span>--coverage
+</code></pre></div>
+
+<h2 id="build-deploy">📦 Build &amp; Deploy</h2>
+<h3 id="android">Android</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Generate APK</span>
+<span class="nb">cd</span><span class="w"> </span>android<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>./gradlew<span class="w"> </span>assembleRelease
+
+<span class="c1"># Generate AAB</span>
+<span class="nb">cd</span><span class="w"> </span>android<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>./gradlew<span class="w"> </span>bundleRelease
+</code></pre></div>
+
+<h3 id="ios">iOS</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Archive for App Store</span>
+npm<span class="w"> </span>run<span class="w"> </span>ios:archive:template:release
+
+<span class="c1"># Build for distribution</span>
+xcodebuild<span class="w"> </span>-workspace<span class="w"> </span>ios/template.xcworkspace<span class="w"> </span>-scheme<span class="w"> </span>template<span class="w"> </span>-configuration<span class="w"> </span>Release<span class="w"> </span>archive
+</code></pre></div>
+
+<h2 id="contributing">🤝 Contributing</h2>
+<ol>
+<li>Fork the repository</li>
+<li>Create a feature branch</li>
+<li>Make your changes</li>
+<li>Add tests if applicable</li>
+<li>Submit a pull request</li>
+</ol>
+<h2 id="license">📄 License</h2>
+<p>This project is licensed under the MIT License - see the LICENSE file for details.</p>
+<h2 id="support">🆘 Support</h2>
+<p>For support and questions:
+- Create an issue in the repository
+- Check the documentation
+- Review the code examples</p>
+<hr />
+<p><strong>Built with ❤️ using React Native and TypeScript</strong></p>
+            </article>
+        </div>
+
+        <footer class="doc-footer">
+            <span>Template · Knowledge Transfer Portal</span>
+            <a href="index.html">← Back to index</a>
+        </footer>
+    </div>
+
+    <script>
+        // ── Wrap all tables for horizontal scroll ────────────────
+        document.querySelectorAll('article table').forEach(t => {
+            const wrap = document.createElement('div');
+            wrap.className = 'table-wrap';
+            t.parentNode.insertBefore(wrap, t);
+            wrap.appendChild(t);
+        });
+
+        // ── Auto-build TOC from headings ──────────────────────────
+        (function() {
+            const headings = document.querySelectorAll('#docArticle h2, #docArticle h3');
+            if (headings.length < 2) {
+                document.getElementById('docToc').style.display = 'none';
+                return;
+            }
+            const ul = document.createElement('ul');
+            headings.forEach((h, i) => {
+                if (!h.id) h.id = 'heading-' + i;
+                const li  = document.createElement('li');
+                const a   = document.createElement('a');
+                a.href        = '#' + h.id;
+                a.textContent = h.textContent;
+                if (h.tagName === 'H3') {
+                    const sub = document.createElement('ul');
+                    const subLi = document.createElement('li');
+                    subLi.appendChild(a);
+                    sub.appendChild(subLi);
+                    ul.appendChild(sub);
+                } else {
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+            });
+            document.getElementById('tocList').appendChild(ul);
+
+            // Highlight active heading on scroll
+            const links = ul.querySelectorAll('a');
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        links.forEach(l => l.style.color = '');
+                        const active = ul.querySelector('a[href="#' + e.target.id + '"]');
+                        if (active) active.style.color = 'var(--accent)';
+                    }
+                });
+            }, { rootMargin: '-20% 0px -75% 0px' });
+            headings.forEach(h => obs.observe(h));
+        })();
+
+        // ── Smooth back-to-top on logo click ─────────────────────
+        document.querySelector('.doc-topbar-brand').addEventListener('click', function(e) {
+            if (window.location.pathname.endsWith('index.html') ||
+                window.location.pathname.endsWith('/')) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    </script>
+
+    <!-- Mermaid: loaded last so DOM is fully ready -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            securityLevel: 'loose',
+            themeVariables: {
+                primaryColor: '#1e1e28',
+                primaryTextColor: '#f0f0f5',
+                primaryBorderColor: '#63b3ed',
+                lineColor: '#444455',
+                secondaryColor: '#18181f',
+                tertiaryColor: '#111118',
+                edgeLabelBackground: '#18181f',
+                fontFamily: 'DM Sans, sans-serif'
+            }
+        });
+        // Explicitly render all .mermaid divs after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+        });
+        // Fallback: if DOMContentLoaded already fired (script at bottom)
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+        }
+    </script>
+</body>
+</html>

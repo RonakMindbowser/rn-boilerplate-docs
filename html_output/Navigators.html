@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigators</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ── Design tokens (mirrors index.html) ─────────────────── */
+        :root {
+            --bg:           #0a0a0f;
+            --surface:      #111118;
+            --surface2:     #18181f;
+            --surface3:     #1e1e28;
+            --border:       rgba(255,255,255,0.07);
+            --border-soft:  rgba(255,255,255,0.04);
+            --accent:       #63b3ed;
+            --accent2:      #f6ad55;
+            --accent3:      #68d391;
+            --accent4:      #9a75ea;
+            --text-primary: #f0f0f5;
+            --text-secondary:#8888a0;
+            --text-dim:     #444455;
+            --code-bg:      #13131c;
+            --radius:       10px;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #1e1e28 transparent;
+        }
+        html::-webkit-scrollbar { width: 6px; }
+        html::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 6px; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            line-height: 1.75;
+            color: var(--text-primary);
+            background: var(--bg);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* ── Layout ──────────────────────────────────────────────── */
+        .page-wrap {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Top bar ─────────────────────────────────────────────── */
+        .doc-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: 52px;
+            background: rgba(10,10,15,0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            gap: 16px;
+        }
+        .doc-topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .doc-topbar-icon {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, #63b3ed, #4299e1);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 12px;
+            color: #000;
+            letter-spacing: -0.5px;
+            box-shadow: 0 2px 10px rgba(99,179,237,0.25);
+            flex-shrink: 0;
+        }
+        .doc-topbar-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .doc-topbar-sep {
+            color: var(--text-dim);
+            font-size: 18px;
+            font-weight: 300;
+        }
+        .doc-topbar-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.3px;
+            font-weight: 400;
+        }
+        .doc-topbar-spacer { flex: 1; }
+        .doc-topbar-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        /* ── Main content ────────────────────────────────────────── */
+        .doc-body {
+            display: flex;
+            flex: 1;
+        }
+
+        /* TOC sidebar */
+        .doc-toc {
+            width: 220px;
+            min-width: 220px;
+            position: sticky;
+            top: 25px;
+            align-self: flex-start;
+            height: calc(100vh - 52px);
+            overflow-y: auto;
+            padding: 28px 16px 28px 24px;
+            border-right: 1px solid var(--border);
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface2) transparent;
+        }
+        .doc-toc::-webkit-scrollbar { width: 4px; }
+        .doc-toc::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+        .doc-toc-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .doc-toc ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .doc-toc ul li a {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 5px 8px;
+            border-radius: 6px;
+            border-left: 2px solid transparent;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .doc-toc ul li a:hover {
+            color: var(--accent);
+            background: rgba(99,179,237,0.06);
+            border-left-color: rgba(99,179,237,0.3);
+        }
+        .doc-toc ul ul { margin-left: 12px; }
+        .doc-toc ul ul li a { font-size: 11px; }
+
+        /* Article */
+        .doc-article {
+            flex: 1;
+            min-width: 0;
+            padding: 48px 56px 80px;
+            max-width: 860px;
+        }
+
+        /* ── Typography ──────────────────────────────────────────── */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            scroll-margin-top: 72px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #f0f0f5 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--accent), var(--accent4));
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            font-size: 17px;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 14px;
+            margin-top: 24px;
+            margin-bottom: 10px;
+            color: var(--accent);
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        strong { color: var(--text-primary); font-weight: 600; }
+        em { color: var(--accent2); font-style: italic; }
+
+        /* ── Links ───────────────────────────────────────────────── */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(99,179,237,0.25);
+            transition: border-color 0.15s, color 0.15s;
+        }
+        a:hover {
+            color: #90cdf4;
+            border-bottom-color: rgba(99,179,237,0.6);
+        }
+
+        /* ── Inline code ─────────────────────────────────────────── */
+        code {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 400;
+            background: var(--surface3);
+            color: var(--accent);
+            padding: 2px 7px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+
+        /* ── Code blocks ─────────────────────────────────────────── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0;
+            margin: 24px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        /* Code block header bar */
+        pre::before {
+            content: '';
+            display: block;
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            background-image: 
+                radial-gradient(circle at 14px 18px, #ff5f57 5px, transparent 5px),
+                radial-gradient(circle at 30px 18px, #febc2e 5px, transparent 5px),
+                radial-gradient(circle at 46px 18px, #28c840 5px, transparent 5px);
+        }
+
+        pre code {
+            display: block;
+            background: none;
+            border: none;
+            padding: 20px 24px;
+            color: #c9d1d9;
+            font-size: 13.5px;
+            line-height: 1.65;
+            overflow-x: auto;
+            white-space: pre;
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface2) transparent;
+        }
+        pre code::-webkit-scrollbar { height: 4px; }
+        pre code::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+
+        /* Codehilite wrapper */
+        .codehilite {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin: 24px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+        .codehilite::before {
+            content: '';
+            display: block;
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            background-image: 
+                radial-gradient(circle at 14px 18px, #ff5f57 5px, transparent 5px),
+                radial-gradient(circle at 30px 18px, #febc2e 5px, transparent 5px),
+                radial-gradient(circle at 46px 18px, #28c840 5px, transparent 5px);
+        }
+        .codehilite pre {
+            background: none;
+            border: none;
+            border-radius: 0;
+            margin: 0;
+            padding: 20px 24px;
+            box-shadow: none;
+        }
+        .codehilite pre::before { display: none; }
+        .codehilite pre code { padding: 0; }
+
+        /* ── Syntax highlighting (dark palette) ──────────────────── */
+        .codehilite .hll { background-color: #2a2a40 }
+        .codehilite .c,
+        .codehilite .cm,
+        .codehilite .c1,
+        .codehilite .cs  { color: #6a737d; font-style: italic }
+        .codehilite .cp  { color: #7ecfc0 }
+        .codehilite .k,
+        .codehilite .kc,
+        .codehilite .kd,
+        .codehilite .kn,
+        .codehilite .kr  { color: #ff79c6; font-weight: 600 }
+        .codehilite .kp  { color: #ff79c6 }
+        .codehilite .kt  { color: #8be9fd }
+        .codehilite .o,
+        .codehilite .ow  { color: #ff79c6 }
+        .codehilite .m,
+        .codehilite .mf,
+        .codehilite .mh,
+        .codehilite .mi,
+        .codehilite .mo,
+        .codehilite .il  { color: #bd93f9 }
+        .codehilite .s,
+        .codehilite .sb,
+        .codehilite .sc,
+        .codehilite .s2,
+        .codehilite .s1,
+        .codehilite .sh,
+        .codehilite .ss  { color: #f1fa8c }
+        .codehilite .sd  { color: #f1fa8c; font-style: italic }
+        .codehilite .se  { color: #ffb86c; font-weight: 600 }
+        .codehilite .si  { color: #ffb86c }
+        .codehilite .sx  { color: #50fa7b }
+        .codehilite .sr  { color: #50fa7b }
+        .codehilite .na  { color: #50fa7b }
+        .codehilite .nb  { color: #8be9fd }
+        .codehilite .bp  { color: #8be9fd }
+        .codehilite .nc  { color: #8be9fd; font-weight: 600 }
+        .codehilite .no  { color: #bd93f9 }
+        .codehilite .nd  { color: #50fa7b }
+        .codehilite .ni  { color: #ffb86c; font-weight: 600 }
+        .codehilite .ne,
+        .codehilite .nf  { color: #50fa7b }
+        .codehilite .nl  { color: #8be9fd; font-weight: 600 }
+        .codehilite .nn  { color: #8be9fd; font-weight: 600 }
+        .codehilite .nt  { color: #ff79c6; font-weight: 600 }
+        .codehilite .nv,
+        .codehilite .vc,
+        .codehilite .vg,
+        .codehilite .vi  { color: #8be9fd }
+        .codehilite .nx  { color: #c9d1d9 }
+        .codehilite .w   { color: #c9d1d9 }
+        .codehilite .err { color: #ff5555 }
+        .codehilite .p   { color: #c9d1d9 }
+        .codehilite .ge  { font-style: italic }
+        .codehilite .gs  { font-weight: bold }
+        .codehilite .gd  { color: #ff5555 }
+        .codehilite .gi  { color: #50fa7b }
+        .codehilite .go  { color: #6a737d }
+        .codehilite .gh  { color: #8be9fd; font-weight: bold }
+        .codehilite .gu  { color: #bd93f9; font-weight: bold }
+        .codehilite .gt  { color: #8be9fd }
+        .codehilite .gr  { color: #ff5555 }
+        .codehilite .gp  { color: #ffb86c; font-weight: bold }
+
+        /* ── Blockquote ───────────────────────────────────────────── */
+        blockquote {
+            border-left: 3px solid var(--accent2);
+            margin: 24px 0;
+            padding: 14px 20px;
+            background: rgba(246,173,85,0.05);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        blockquote strong { color: var(--accent2); }
+        blockquote p { margin: 0; color: inherit; }
+
+        /* ── Tables ──────────────────────────────────────────────── */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 24px 0;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+        }
+        thead tr {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 16px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border-soft);
+            color: var(--text-secondary);
+            vertical-align: top;
+        }
+        tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* ── Lists ───────────────────────────────────────────────── */
+        ul, ol {
+            padding-left: 24px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+        ul li, ol li {
+            margin-bottom: 6px;
+            padding-left: 4px;
+            line-height: 1.75;
+        }
+        ul li::marker { color: var(--accent); }
+        ol li::marker { color: var(--accent); font-family: 'DM Mono', monospace; font-size: 13px; }
+        li > ul, li > ol { margin-top: 6px; margin-bottom: 0; }
+
+        /* ── Horizontal rule ─────────────────────────────────────── */
+        hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 40px 0;
+        }
+
+        /* ── Mermaid diagrams ────────────────────────────────────── */
+        .mermaid {
+            margin: 28px 0;
+            padding: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            overflow-x: auto;
+            min-height: 60px;
+            position: relative;
+        }
+        /* Loading shimmer before mermaid renders */
+        .mermaid:not([data-processed="true"])::after {
+            content: 'Rendering diagram...';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ── Callout / admonition boxes ──────────────────────────── */
+        .callout {
+            display: flex;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: var(--radius);
+            margin: 20px 0;
+            border: 1px solid;
+            font-size: 14px;
+        }
+        .callout-info    { background: rgba(99,179,237,0.07);  border-color: rgba(99,179,237,0.2); }
+        .callout-warning { background: rgba(246,173,85,0.07);  border-color: rgba(246,173,85,0.2); }
+        .callout-success { background: rgba(104,211,145,0.07); border-color: rgba(104,211,145,0.2); }
+
+        /* ── Image ───────────────────────────────────────────────── */
+        img {
+            max-width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin: 12px 0;
+        }
+
+        /* ── Footer ──────────────────────────────────────────────── */
+        .doc-footer {
+            border-top: 1px solid var(--border);
+            padding: 20px 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .doc-footer a {
+            color: var(--accent);
+            border-bottom: none;
+        }
+
+        /* ── Responsive ──────────────────────────────────────────── */
+        @media (max-width: 1000px) {
+            .doc-toc { display: none; }
+            .doc-article { padding: 32px 28px 60px; }
+        }
+        @media (max-width: 640px) {
+            .doc-article { padding: 24px 18px 48px; }
+            h1 { font-size: 24px; }
+            h2 { font-size: 18px; }
+            .doc-topbar { padding: 0 18px; }
+            .doc-footer { padding: 16px 18px; flex-direction: column; gap: 4px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+
+        <div class="doc-body">
+            <!-- Auto-generated TOC -->
+            <nav class="doc-toc" id="docToc">
+                <div class="doc-toc-label">On this page</div>
+                <div id="tocList"></div>
+            </nav>
+
+            <!-- Main article -->
+            <article class="doc-article" id="docArticle">
+                <h1 id="navigators-documentation">Navigators Documentation</h1>
+<p>This document provides comprehensive documentation for all navigation components and routing logic in the React Native TypeScript boilerplate. These navigators are designed to provide type-safe navigation with proper screen management and authentication flow.</p>
+<h2 id="overview">📋 Overview</h2>
+<p>The navigators in this boilerplate are built with React Navigation v6 and TypeScript for type safety and follow navigation best practices. They are designed to be:</p>
+<ul>
+<li><strong>Type-safe</strong> - Full TypeScript integration with proper navigation types</li>
+<li><strong>Hierarchical</strong> - Clear navigation structure with proper nesting</li>
+<li><strong>Authentication-aware</strong> - Conditional navigation based on user login status</li>
+<li><strong>Scalable</strong> - Easy to add new screens and navigation flows</li>
+<li><strong>Consistent</strong> - Follow the same patterns and implementation approach</li>
+</ul>
+<h2 id="navigator-files">📁 Navigator Files</h2>
+<h3 id="core-navigation-components">Core Navigation Components</h3>
+<table>
+<thead>
+<tr>
+<th>Navigator</th>
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RootStackNavigator</strong></td>
+<td><code>src/navigators/RootStackNavigator.tsx</code></td>
+<td>Root navigation container with authentication logic</td>
+</tr>
+<tr>
+<td><strong>AuthStackNavigator</strong></td>
+<td><code>src/navigators/AuthStackNavigator.tsx</code></td>
+<td>Authentication flow navigation stack</td>
+</tr>
+<tr>
+<td><strong>MainStackNavigator</strong></td>
+<td><code>src/navigators/MainStackNavigator.tsx</code></td>
+<td>Main app navigation stack for authenticated users</td>
+</tr>
+<tr>
+<td><strong>HomeTabNavigator</strong></td>
+<td><code>src/navigators/HomeTabNavigator.tsx</code></td>
+<td>Bottom tab navigation for main app screens</td>
+</tr>
+<tr>
+<td><strong>routes.ts</strong></td>
+<td><code>src/navigators/routes.ts</code></td>
+<td>Navigation route constants and enums</td>
+</tr>
+</tbody>
+</table>
+<h3 id="navigator-exports">Navigator Exports</h3>
+<ul>
+<li><code>src/navigators/RootStackNavigator.tsx</code> - Exports RootStackNavigator component</li>
+<li><code>src/navigators/AuthStackNavigator.tsx</code> - Exports AuthStackNavigator component</li>
+<li><code>src/navigators/MainStackNavigator.tsx</code> - Exports MainStackNavigator component</li>
+<li><code>src/navigators/HomeTabNavigator.tsx</code> - Exports HomeTabNavigator component</li>
+<li><code>src/navigators/routes.ts</code> - Exports navigation route constants</li>
+</ul>
+<h2 id="navigator-details-usage-examples">🎯 Navigator Details &amp; Usage Examples</h2>
+<h3 id="1-routes-configuration">1. Routes Configuration</h3>
+<p><strong>Purpose</strong>: Defines navigation route constants and enums for type-safe navigation throughout the application.</p>
+<p><strong>File</strong>: <code>src/navigators/routes.ts</code></p>
+<p><strong>Features</strong>:
+- Enum-based route definitions
+- Type-safe navigation constants
+- Organized by navigation stack
+- Easy to maintain and extend</p>
+<p><strong>Route Structure</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kd">enum</span><span class="w"> </span><span class="nx">MAIN_STACK_NAVIGATOR</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">HOME_TAB_NAVIGATOR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;HOME_TAB_NAVIGATOR&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="kd">enum</span><span class="w"> </span><span class="nx">AUTH_STACK_NAVIGATOR</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">LOGIN_SCREEN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;LOGIN_SCREEN&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;HOME&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">HOME_DETAILS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;HOME_DETAILS&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="kd">enum</span><span class="w"> </span><span class="nx">HOME_TAB_NAVIGATOR</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;HOME&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">HOME_DETAILS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;HOME_DETAILS&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Usage Example</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">AUTH_STACK_NAVIGATOR</span><span class="p">,</span><span class="w"> </span><span class="nx">HOME_TAB_NAVIGATOR</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;navigators/routes&#39;</span><span class="p">;</span>
+
+<span class="c1">// Navigate to login screen</span>
+<span class="nx">navigation</span><span class="p">.</span><span class="nx">navigate</span><span class="p">(</span><span class="nx">AUTH_STACK_NAVIGATOR</span><span class="p">.</span><span class="nx">LOGIN_SCREEN</span><span class="p">);</span>
+
+<span class="c1">// Navigate to home details</span>
+<span class="nx">navigation</span><span class="p">.</span><span class="nx">navigate</span><span class="p">(</span><span class="nx">HOME_TAB_NAVIGATOR</span><span class="p">.</span><span class="nx">HOME_DETAILS</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Movie Name&#39;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>
+
+<h3 id="2-rootstacknavigator">2. RootStackNavigator</h3>
+<p><strong>Purpose</strong>: Root navigation container that manages authentication state and provides conditional navigation between authenticated and unauthenticated flows.</p>
+<p><strong>File</strong>: <code>src/navigators/RootStackNavigator.tsx</code></p>
+<p><strong>Features</strong>:
+- Authentication state management
+- Conditional navigation rendering
+- Firebase analytics integration
+- Boot splash handling
+- Error boundary wrapper
+- Storage service integration</p>
+<p><strong>Navigation Logic</strong>:
+- Renders <code>MainStackNavigator</code> when user has access token
+- Renders <code>AuthStackNavigator</code> when user is not authenticated
+- Integrates with Redux state for authentication status</p>
+<p><strong>Usage Example</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">RootStackNavigator</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;navigators/RootStackNavigator&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">App</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">RootStackNavigator</span><span class="w"> </span><span class="p">/&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="nx">App</span><span class="p">;</span>
+</code></pre></div>
+
+<h3 id="3-authstacknavigator">3. AuthStackNavigator</h3>
+<p><strong>Purpose</strong>: Manages navigation for unauthenticated users, including login screen and limited access screens.</p>
+<p><strong>File</strong>: <code>src/navigators/AuthStackNavigator.tsx</code></p>
+<p><strong>Features</strong>:
+- Stack-based navigation
+- Type-safe navigation parameters
+- Screen-specific options configuration
+- Movie details data passing</p>
+<p><strong>Screen Configuration</strong>:
+- <code>LOGIN_SCREEN</code>: Login component with hidden header
+- <code>HOME</code>: Home component with hidden header
+- <code>HOME_DETAILS</code>: Details screen with hidden header and data parameter</p>
+<p><strong>Type Definitions</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nx">MovieDetails</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">name?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">imageurl?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">team?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">firstappearance?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">publisher?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">bio?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">type</span><span class="w"> </span><span class="nx">AuthStackParamList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">LOGIN_SCREEN</span><span class="o">:</span><span class="w"> </span><span class="kt">undefined</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">HOME</span><span class="o">:</span><span class="w"> </span><span class="kt">undefined</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">HOME_DETAILS</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="nx">data?</span><span class="o">:</span><span class="w"> </span><span class="kt">MovieDetails</span><span class="p">};</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p><strong>Usage Example</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">useNavigation</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@react-navigation/native&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">AUTH_STACK_NAVIGATOR</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;navigators/routes&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">LoginScreen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">navigation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useNavigation</span><span class="p">();</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleLoginSuccess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Navigate to home after successful login</span>
+<span class="w">    </span><span class="nx">navigation</span><span class="p">.</span><span class="nx">navigate</span><span class="p">(</span><span class="nx">AUTH_STACK_NAVIGATOR</span><span class="p">.</span><span class="nx">HOME</span><span class="p">);</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleViewDetails</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">movieData</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">navigation</span><span class="p">.</span><span class="nx">navigate</span><span class="p">(</span><span class="nx">AUTH_STACK_NAVIGATOR</span><span class="p">.</span><span class="nx">HOME_DETAILS</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">movieData</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">View</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">container</span><span class="p">}&gt;</span>
+<span class="w">      </span><span class="p">{</span><span class="cm">/* Login form */</span><span class="p">}</span>
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">TouchableOpacity</span><span class="w"> </span><span class="na">onPress</span><span class="o">=</span><span class="p">{</span><span class="nx">handleLoginSuccess</span><span class="p">}&gt;</span>
+<span class="w">        </span><span class="p">&lt;</span><span class="nt">Text</span><span class="p">&gt;</span><span class="nx">Login</span><span class="p">&lt;/</span><span class="nt">Text</span><span class="p">&gt;</span>
+<span class="w">      </span><span class="p">&lt;/</span><span class="nt">TouchableOpacity</span><span class="p">&gt;</span>
+<span class="w">    </span><span class="p">&lt;/</span><span class="nt">View</span><span class="p">&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<h3 id="4-mainstacknavigator">4. MainStackNavigator</h3>
+<p><strong>Purpose</strong>: Manages navigation for authenticated users, providing access to the main application features.</p>
+<p><strong>File</strong>: <code>src/navigators/MainStackNavigator.tsx</code></p>
+<p><strong>Features</strong>:
+- Stack-based navigation
+- Hidden headers by default
+- Integration with tab navigator
+- Clean navigation structure</p>
+<p><strong>Screen Configuration</strong>:
+- <code>HOME_TAB_NAVIGATOR</code>: Home tab navigator component</p>
+<p><strong>Usage Example</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">useNavigation</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@react-navigation/native&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">MAIN_STACK_NAVIGATOR</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;navigators/routes&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">MainScreen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">navigation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useNavigation</span><span class="p">();</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">navigateToHomeTabs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">navigation</span><span class="p">.</span><span class="nx">navigate</span><span class="p">(</span><span class="nx">MAIN_STACK_NAVIGATOR</span><span class="p">.</span><span class="nx">HOME_TAB_NAVIGATOR</span><span class="p">);</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">View</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">container</span><span class="p">}&gt;</span>
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">TouchableOpacity</span><span class="w"> </span><span class="na">onPress</span><span class="o">=</span><span class="p">{</span><span class="nx">navigateToHomeTabs</span><span class="p">}&gt;</span>
+<span class="w">        </span><span class="p">&lt;</span><span class="nt">Text</span><span class="p">&gt;</span><span class="nx">Go</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">Home</span><span class="w"> </span><span class="nx">Tabs</span><span class="p">&lt;/</span><span class="nt">Text</span><span class="p">&gt;</span>
+<span class="w">      </span><span class="p">&lt;/</span><span class="nt">TouchableOpacity</span><span class="p">&gt;</span>
+<span class="w">    </span><span class="p">&lt;/</span><span class="nt">View</span><span class="p">&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<h3 id="5-hometabnavigator">5. HomeTabNavigator</h3>
+<p><strong>Purpose</strong>: Provides bottom tab navigation for the main application screens, allowing users to switch between different sections.</p>
+<p><strong>File</strong>: <code>src/navigators/HomeTabNavigator.tsx</code></p>
+<p><strong>Features</strong>:
+- Bottom tab navigation
+- Type-safe navigation parameters
+- Movie details data passing
+- Hidden headers by default</p>
+<p><strong>Tab Configuration</strong>:
+- <code>HOME</code>: Home screen tab
+- <code>HOME_DETAILS</code>: Details screen tab with data parameter</p>
+<p><strong>Type Definitions</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nx">MovieDetails</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">name?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">imageurl?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">team?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">firstappearance?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">publisher?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">bio?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">type</span><span class="w"> </span><span class="nx">HomeTabParamList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">HOME</span><span class="o">:</span><span class="w"> </span><span class="kt">undefined</span><span class="p">;</span>
+<span class="w">  </span><span class="nx">HOME_DETAILS</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="nx">data?</span><span class="o">:</span><span class="w"> </span><span class="kt">MovieDetails</span><span class="p">};</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p><strong>Usage Example</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">useNavigation</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@react-navigation/native&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">HOME_TAB_NAVIGATOR</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;navigators/routes&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">HomeScreen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">navigation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useNavigation</span><span class="p">();</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleMoviePress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">movieData</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">navigation</span><span class="p">.</span><span class="nx">navigate</span><span class="p">(</span><span class="nx">HOME_TAB_NAVIGATOR</span><span class="p">.</span><span class="nx">HOME_DETAILS</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">movieData</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">View</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">container</span><span class="p">}&gt;</span>
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">TouchableOpacity</span><span class="w"> </span><span class="na">onPress</span><span class="o">=</span><span class="p">{()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">handleMoviePress</span><span class="p">(</span><span class="nx">movieData</span><span class="p">)}&gt;</span>
+<span class="w">        </span><span class="p">&lt;</span><span class="nt">Text</span><span class="p">&gt;</span><span class="nx">View</span><span class="w"> </span><span class="nx">Movie</span><span class="w"> </span><span class="nx">Details</span><span class="p">&lt;/</span><span class="nt">Text</span><span class="p">&gt;</span>
+<span class="w">      </span><span class="p">&lt;/</span><span class="nt">TouchableOpacity</span><span class="p">&gt;</span>
+<span class="w">    </span><span class="p">&lt;/</span><span class="nt">View</span><span class="p">&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p><strong>Navigation Flow</strong>:
+The application follows this navigation hierarchy:</p>
+<div class="codehilite"><pre><span></span><code>RootStackNavigator
+├── AuthStackNavigator (when not authenticated)
+│   ├── LOGIN_SCREEN
+│   ├── HOME
+│   └── HOME_DETAILS
+└── MainStackNavigator (when authenticated)
+    └── HomeTabNavigator
+        ├── HOME
+        └── HOME_DETAILS
+</code></pre></div>
+
+<p><strong>Navigation Parameters</strong>:
+Each screen can receive specific parameters:</p>
+<ul>
+<li><strong>LOGIN_SCREEN</strong>: No parameters</li>
+<li><strong>HOME</strong>: No parameters</li>
+<li><strong>HOME_DETAILS</strong>: <code>{data?: MovieDetails}</code> - Optional movie data object</li>
+</ul>
+            </article>
+        </div>
+
+        <footer class="doc-footer">
+            <span>Template · Knowledge Transfer Portal</span>
+            <a href="index.html">← Back to index</a>
+        </footer>
+    </div>
+
+    <script>
+        // ── Wrap all tables for horizontal scroll ────────────────
+        document.querySelectorAll('article table').forEach(t => {
+            const wrap = document.createElement('div');
+            wrap.className = 'table-wrap';
+            t.parentNode.insertBefore(wrap, t);
+            wrap.appendChild(t);
+        });
+
+        // ── Auto-build TOC from headings ──────────────────────────
+        (function() {
+            const headings = document.querySelectorAll('#docArticle h2, #docArticle h3');
+            if (headings.length < 2) {
+                document.getElementById('docToc').style.display = 'none';
+                return;
+            }
+            const ul = document.createElement('ul');
+            headings.forEach((h, i) => {
+                if (!h.id) h.id = 'heading-' + i;
+                const li  = document.createElement('li');
+                const a   = document.createElement('a');
+                a.href        = '#' + h.id;
+                a.textContent = h.textContent;
+                if (h.tagName === 'H3') {
+                    const sub = document.createElement('ul');
+                    const subLi = document.createElement('li');
+                    subLi.appendChild(a);
+                    sub.appendChild(subLi);
+                    ul.appendChild(sub);
+                } else {
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+            });
+            document.getElementById('tocList').appendChild(ul);
+
+            // Highlight active heading on scroll
+            const links = ul.querySelectorAll('a');
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        links.forEach(l => l.style.color = '');
+                        const active = ul.querySelector('a[href="#' + e.target.id + '"]');
+                        if (active) active.style.color = 'var(--accent)';
+                    }
+                });
+            }, { rootMargin: '-20% 0px -75% 0px' });
+            headings.forEach(h => obs.observe(h));
+        })();
+
+        // ── Smooth back-to-top on logo click ─────────────────────
+        document.querySelector('.doc-topbar-brand').addEventListener('click', function(e) {
+            if (window.location.pathname.endsWith('index.html') ||
+                window.location.pathname.endsWith('/')) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    </script>
+
+    <!-- Mermaid: loaded last so DOM is fully ready -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            securityLevel: 'loose',
+            themeVariables: {
+                primaryColor: '#1e1e28',
+                primaryTextColor: '#f0f0f5',
+                primaryBorderColor: '#63b3ed',
+                lineColor: '#444455',
+                secondaryColor: '#18181f',
+                tertiaryColor: '#111118',
+                edgeLabelBackground: '#18181f',
+                fontFamily: 'DM Sans, sans-serif'
+            }
+        });
+        // Explicitly render all .mermaid divs after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+        });
+        // Fallback: if DOMContentLoaded already fired (script at bottom)
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+        }
+    </script>
+</body>
+</html>

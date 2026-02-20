@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hocs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ── Design tokens (mirrors index.html) ─────────────────── */
+        :root {
+            --bg:           #0a0a0f;
+            --surface:      #111118;
+            --surface2:     #18181f;
+            --surface3:     #1e1e28;
+            --border:       rgba(255,255,255,0.07);
+            --border-soft:  rgba(255,255,255,0.04);
+            --accent:       #63b3ed;
+            --accent2:      #f6ad55;
+            --accent3:      #68d391;
+            --accent4:      #9a75ea;
+            --text-primary: #f0f0f5;
+            --text-secondary:#8888a0;
+            --text-dim:     #444455;
+            --code-bg:      #13131c;
+            --radius:       10px;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #1e1e28 transparent;
+        }
+        html::-webkit-scrollbar { width: 6px; }
+        html::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 6px; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            line-height: 1.75;
+            color: var(--text-primary);
+            background: var(--bg);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* ── Layout ──────────────────────────────────────────────── */
+        .page-wrap {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Top bar ─────────────────────────────────────────────── */
+        .doc-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: 52px;
+            background: rgba(10,10,15,0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            gap: 16px;
+        }
+        .doc-topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .doc-topbar-icon {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, #63b3ed, #4299e1);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 12px;
+            color: #000;
+            letter-spacing: -0.5px;
+            box-shadow: 0 2px 10px rgba(99,179,237,0.25);
+            flex-shrink: 0;
+        }
+        .doc-topbar-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .doc-topbar-sep {
+            color: var(--text-dim);
+            font-size: 18px;
+            font-weight: 300;
+        }
+        .doc-topbar-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.3px;
+            font-weight: 400;
+        }
+        .doc-topbar-spacer { flex: 1; }
+        .doc-topbar-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        /* ── Main content ────────────────────────────────────────── */
+        .doc-body {
+            display: flex;
+            flex: 1;
+        }
+
+        /* TOC sidebar */
+        .doc-toc {
+            width: 220px;
+            min-width: 220px;
+            position: sticky;
+            top: 25px;
+            align-self: flex-start;
+            height: calc(100vh - 52px);
+            overflow-y: auto;
+            padding: 28px 16px 28px 24px;
+            border-right: 1px solid var(--border);
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface2) transparent;
+        }
+        .doc-toc::-webkit-scrollbar { width: 4px; }
+        .doc-toc::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+        .doc-toc-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .doc-toc ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .doc-toc ul li a {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 5px 8px;
+            border-radius: 6px;
+            border-left: 2px solid transparent;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .doc-toc ul li a:hover {
+            color: var(--accent);
+            background: rgba(99,179,237,0.06);
+            border-left-color: rgba(99,179,237,0.3);
+        }
+        .doc-toc ul ul { margin-left: 12px; }
+        .doc-toc ul ul li a { font-size: 11px; }
+
+        /* Article */
+        .doc-article {
+            flex: 1;
+            min-width: 0;
+            padding: 48px 56px 80px;
+            max-width: 860px;
+        }
+
+        /* ── Typography ──────────────────────────────────────────── */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            scroll-margin-top: 72px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #f0f0f5 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--accent), var(--accent4));
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            font-size: 17px;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 14px;
+            margin-top: 24px;
+            margin-bottom: 10px;
+            color: var(--accent);
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        strong { color: var(--text-primary); font-weight: 600; }
+        em { color: var(--accent2); font-style: italic; }
+
+        /* ── Links ───────────────────────────────────────────────── */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(99,179,237,0.25);
+            transition: border-color 0.15s, color 0.15s;
+        }
+        a:hover {
+            color: #90cdf4;
+            border-bottom-color: rgba(99,179,237,0.6);
+        }
+
+        /* ── Inline code ─────────────────────────────────────────── */
+        code {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 400;
+            background: var(--surface3);
+            color: var(--accent);
+            padding: 2px 7px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+
+        /* ── Code blocks ─────────────────────────────────────────── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0;
+            margin: 24px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        /* Code block header bar */
+        pre::before {
+            content: '';
+            display: block;
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            background-image: 
+                radial-gradient(circle at 14px 18px, #ff5f57 5px, transparent 5px),
+                radial-gradient(circle at 30px 18px, #febc2e 5px, transparent 5px),
+                radial-gradient(circle at 46px 18px, #28c840 5px, transparent 5px);
+        }
+
+        pre code {
+            display: block;
+            background: none;
+            border: none;
+            padding: 20px 24px;
+            color: #c9d1d9;
+            font-size: 13.5px;
+            line-height: 1.65;
+            overflow-x: auto;
+            white-space: pre;
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface2) transparent;
+        }
+        pre code::-webkit-scrollbar { height: 4px; }
+        pre code::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+
+        /* Codehilite wrapper */
+        .codehilite {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin: 24px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+        .codehilite::before {
+            content: '';
+            display: block;
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            background-image: 
+                radial-gradient(circle at 14px 18px, #ff5f57 5px, transparent 5px),
+                radial-gradient(circle at 30px 18px, #febc2e 5px, transparent 5px),
+                radial-gradient(circle at 46px 18px, #28c840 5px, transparent 5px);
+        }
+        .codehilite pre {
+            background: none;
+            border: none;
+            border-radius: 0;
+            margin: 0;
+            padding: 20px 24px;
+            box-shadow: none;
+        }
+        .codehilite pre::before { display: none; }
+        .codehilite pre code { padding: 0; }
+
+        /* ── Syntax highlighting (dark palette) ──────────────────── */
+        .codehilite .hll { background-color: #2a2a40 }
+        .codehilite .c,
+        .codehilite .cm,
+        .codehilite .c1,
+        .codehilite .cs  { color: #6a737d; font-style: italic }
+        .codehilite .cp  { color: #7ecfc0 }
+        .codehilite .k,
+        .codehilite .kc,
+        .codehilite .kd,
+        .codehilite .kn,
+        .codehilite .kr  { color: #ff79c6; font-weight: 600 }
+        .codehilite .kp  { color: #ff79c6 }
+        .codehilite .kt  { color: #8be9fd }
+        .codehilite .o,
+        .codehilite .ow  { color: #ff79c6 }
+        .codehilite .m,
+        .codehilite .mf,
+        .codehilite .mh,
+        .codehilite .mi,
+        .codehilite .mo,
+        .codehilite .il  { color: #bd93f9 }
+        .codehilite .s,
+        .codehilite .sb,
+        .codehilite .sc,
+        .codehilite .s2,
+        .codehilite .s1,
+        .codehilite .sh,
+        .codehilite .ss  { color: #f1fa8c }
+        .codehilite .sd  { color: #f1fa8c; font-style: italic }
+        .codehilite .se  { color: #ffb86c; font-weight: 600 }
+        .codehilite .si  { color: #ffb86c }
+        .codehilite .sx  { color: #50fa7b }
+        .codehilite .sr  { color: #50fa7b }
+        .codehilite .na  { color: #50fa7b }
+        .codehilite .nb  { color: #8be9fd }
+        .codehilite .bp  { color: #8be9fd }
+        .codehilite .nc  { color: #8be9fd; font-weight: 600 }
+        .codehilite .no  { color: #bd93f9 }
+        .codehilite .nd  { color: #50fa7b }
+        .codehilite .ni  { color: #ffb86c; font-weight: 600 }
+        .codehilite .ne,
+        .codehilite .nf  { color: #50fa7b }
+        .codehilite .nl  { color: #8be9fd; font-weight: 600 }
+        .codehilite .nn  { color: #8be9fd; font-weight: 600 }
+        .codehilite .nt  { color: #ff79c6; font-weight: 600 }
+        .codehilite .nv,
+        .codehilite .vc,
+        .codehilite .vg,
+        .codehilite .vi  { color: #8be9fd }
+        .codehilite .nx  { color: #c9d1d9 }
+        .codehilite .w   { color: #c9d1d9 }
+        .codehilite .err { color: #ff5555 }
+        .codehilite .p   { color: #c9d1d9 }
+        .codehilite .ge  { font-style: italic }
+        .codehilite .gs  { font-weight: bold }
+        .codehilite .gd  { color: #ff5555 }
+        .codehilite .gi  { color: #50fa7b }
+        .codehilite .go  { color: #6a737d }
+        .codehilite .gh  { color: #8be9fd; font-weight: bold }
+        .codehilite .gu  { color: #bd93f9; font-weight: bold }
+        .codehilite .gt  { color: #8be9fd }
+        .codehilite .gr  { color: #ff5555 }
+        .codehilite .gp  { color: #ffb86c; font-weight: bold }
+
+        /* ── Blockquote ───────────────────────────────────────────── */
+        blockquote {
+            border-left: 3px solid var(--accent2);
+            margin: 24px 0;
+            padding: 14px 20px;
+            background: rgba(246,173,85,0.05);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        blockquote strong { color: var(--accent2); }
+        blockquote p { margin: 0; color: inherit; }
+
+        /* ── Tables ──────────────────────────────────────────────── */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 24px 0;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+        }
+        thead tr {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 16px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border-soft);
+            color: var(--text-secondary);
+            vertical-align: top;
+        }
+        tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* ── Lists ───────────────────────────────────────────────── */
+        ul, ol {
+            padding-left: 24px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+        ul li, ol li {
+            margin-bottom: 6px;
+            padding-left: 4px;
+            line-height: 1.75;
+        }
+        ul li::marker { color: var(--accent); }
+        ol li::marker { color: var(--accent); font-family: 'DM Mono', monospace; font-size: 13px; }
+        li > ul, li > ol { margin-top: 6px; margin-bottom: 0; }
+
+        /* ── Horizontal rule ─────────────────────────────────────── */
+        hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 40px 0;
+        }
+
+        /* ── Mermaid diagrams ────────────────────────────────────── */
+        .mermaid {
+            margin: 28px 0;
+            padding: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            overflow-x: auto;
+            min-height: 60px;
+            position: relative;
+        }
+        /* Loading shimmer before mermaid renders */
+        .mermaid:not([data-processed="true"])::after {
+            content: 'Rendering diagram...';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ── Callout / admonition boxes ──────────────────────────── */
+        .callout {
+            display: flex;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: var(--radius);
+            margin: 20px 0;
+            border: 1px solid;
+            font-size: 14px;
+        }
+        .callout-info    { background: rgba(99,179,237,0.07);  border-color: rgba(99,179,237,0.2); }
+        .callout-warning { background: rgba(246,173,85,0.07);  border-color: rgba(246,173,85,0.2); }
+        .callout-success { background: rgba(104,211,145,0.07); border-color: rgba(104,211,145,0.2); }
+
+        /* ── Image ───────────────────────────────────────────────── */
+        img {
+            max-width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin: 12px 0;
+        }
+
+        /* ── Footer ──────────────────────────────────────────────── */
+        .doc-footer {
+            border-top: 1px solid var(--border);
+            padding: 20px 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .doc-footer a {
+            color: var(--accent);
+            border-bottom: none;
+        }
+
+        /* ── Responsive ──────────────────────────────────────────── */
+        @media (max-width: 1000px) {
+            .doc-toc { display: none; }
+            .doc-article { padding: 32px 28px 60px; }
+        }
+        @media (max-width: 640px) {
+            .doc-article { padding: 24px 18px 48px; }
+            h1 { font-size: 24px; }
+            h2 { font-size: 18px; }
+            .doc-topbar { padding: 0 18px; }
+            .doc-footer { padding: 16px 18px; flex-direction: column; gap: 4px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+
+        <div class="doc-body">
+            <!-- Auto-generated TOC -->
+            <nav class="doc-toc" id="docToc">
+                <div class="doc-toc-label">On this page</div>
+                <div id="tocList"></div>
+            </nav>
+
+            <!-- Main article -->
+            <article class="doc-article" id="docArticle">
+                <h1 id="hocs-documentation">HOCs Documentation</h1>
+<p>This document provides comprehensive documentation for all Higher-Order Components (HOCs) in the React Native TypeScript boilerplate. These HOCs are designed to provide reusable functionality and cross-cutting concerns with type safety and consistent patterns.</p>
+<h2 id="overview">📋 Overview</h2>
+<p>The HOCs in this boilerplate are built with TypeScript for type safety and follow React HOC best practices. They are designed to be:</p>
+<ul>
+<li><strong>Reusable</strong> - Can be applied to multiple components</li>
+<li><strong>Type-safe</strong> - Full TypeScript integration with proper prop types</li>
+<li><strong>Cross-cutting</strong> - Handle common concerns like loading states and internationalization</li>
+<li><strong>Consistent</strong> - Follow the same patterns and implementation approach</li>
+<li><strong>Composable</strong> - Can be combined with other HOCs and components</li>
+</ul>
+<h2 id="hoc-files">📁 HOC Files</h2>
+<h3 id="core-hocs">Core HOCs</h3>
+<table>
+<thead>
+<tr>
+<th>HOC</th>
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Loader</strong></td>
+<td><code>src/hocs/Loader.tsx</code></td>
+<td>Loading overlay component with activity indicator</td>
+</tr>
+<tr>
+<td><strong>LanguageProvider</strong></td>
+<td><code>src/hocs/LanguageProvider.ts</code></td>
+<td>Internationalization provider using react-i18next</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hoc-exports">HOC Exports</h3>
+<ul>
+<li><code>src/hocs/Loader.tsx</code> - Exports Loader component</li>
+<li><code>src/hocs/LanguageProvider.ts</code> - Exports LanguageProvider component</li>
+</ul>
+<h2 id="hoc-details-usage-examples">🎯 HOC Details &amp; Usage Examples</h2>
+<h3 id="1-loader-hoc">1. Loader HOC</h3>
+<p><strong>Purpose</strong>: Provides a full-screen loading overlay with activity indicator and internationalized loading text.</p>
+<p><strong>File</strong>: <code>src/hocs/Loader.tsx</code></p>
+<p><strong>Features</strong>:
+- Full-screen overlay with semi-transparent background
+- Configurable activity indicator size (small/large)
+- Customizable color for the activity indicator
+- Internationalized loading text using react-i18next
+- Absolute positioning to cover entire screen
+- Centered content with proper styling</p>
+<p><strong>Props</strong>:
+- <code>size</code>: 'small' | 'large' - Size of the activity indicator
+- <code>color</code>: ColorValue - Color of the activity indicator</p>
+<p><strong>Usage Example</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">View</span><span class="p">,</span><span class="w"> </span><span class="nx">StyleSheet</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react-native&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">Loader</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;hocs/Loader&#39;</span><span class="p">;</span>
+
+<span class="c1">// Basic usage with default props</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">LoadingScreen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">isLoading</span><span class="p">,</span><span class="w"> </span><span class="nx">setIsLoading</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">React</span><span class="p">.</span><span class="nx">useState</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+
+<span class="w">  </span><span class="nx">React</span><span class="p">.</span><span class="nx">useEffect</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Simulate loading</span>
+<span class="w">    </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">setIsLoading</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+<span class="w">    </span><span class="p">},</span><span class="w"> </span><span class="mf">3000</span><span class="p">);</span>
+<span class="w">  </span><span class="p">},</span><span class="w"> </span><span class="p">[]);</span>
+
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">isLoading</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">&lt;</span><span class="nt">Loader</span><span class="w"> </span><span class="na">size</span><span class="o">=</span><span class="s">&quot;large&quot;</span><span class="w"> </span><span class="na">color</span><span class="o">=</span><span class="s">&quot;#0077b6&quot;</span><span class="w"> </span><span class="p">/&gt;;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">View</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">container</span><span class="p">}&gt;</span>
+<span class="w">      </span><span class="p">{</span><span class="cm">/* Your content here */</span><span class="p">}</span>
+<span class="w">    </span><span class="p">&lt;/</span><span class="nt">View</span><span class="p">&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1">// Usage in a component with conditional rendering</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">DataScreen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">data</span><span class="p">,</span><span class="w"> </span><span class="nx">setData</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">React</span><span class="p">.</span><span class="nx">useState</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">loading</span><span class="p">,</span><span class="w"> </span><span class="nx">setLoading</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">React</span><span class="p">.</span><span class="nx">useState</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">fetchData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">setLoading</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="s1">&#39;https://api.example.com/data&#39;</span><span class="p">);</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">();</span>
+<span class="w">      </span><span class="nx">setData</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">&#39;Error fetching data:&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">setLoading</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="nx">React</span><span class="p">.</span><span class="nx">useEffect</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">fetchData</span><span class="p">();</span>
+<span class="w">  </span><span class="p">},</span><span class="w"> </span><span class="p">[]);</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">View</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">container</span><span class="p">}&gt;</span>
+<span class="w">      </span><span class="p">{</span><span class="nx">data</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="p">&lt;</span><span class="nt">View</span><span class="p">&gt;</span>
+<span class="w">          </span><span class="p">{</span><span class="cm">/* Render your data */</span><span class="p">}</span>
+<span class="w">        </span><span class="p">&lt;/</span><span class="nt">View</span><span class="p">&gt;</span>
+<span class="w">      </span><span class="p">)}</span>
+<span class="w">      </span><span class="p">{</span><span class="nx">loading</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">&lt;</span><span class="nt">Loader</span><span class="w"> </span><span class="na">size</span><span class="o">=</span><span class="s">&quot;small&quot;</span><span class="w"> </span><span class="na">color</span><span class="o">=</span><span class="s">&quot;#ffffff&quot;</span><span class="w"> </span><span class="p">/&gt;}</span>
+<span class="w">    </span><span class="p">&lt;/</span><span class="nt">View</span><span class="p">&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1">// Usage with custom colors</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">CustomLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">Loader</span><span class="w"> </span>
+<span class="w">      </span><span class="na">size</span><span class="o">=</span><span class="s">&quot;large&quot;</span><span class="w"> </span>
+<span class="w">      </span><span class="na">color</span><span class="o">=</span><span class="s">&quot;#00b4d8&quot;</span><span class="w"> </span>
+<span class="w">    </span><span class="p">/&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">styles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">StyleSheet</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">container</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">flex</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">backgroundColor</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;#f8f9fa&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">});</span>
+</code></pre></div>
+
+<h3 id="2-languageprovider-hoc">2. LanguageProvider HOC</h3>
+<p><strong>Purpose</strong>: Provides internationalization support using react-i18next for the entire application.</p>
+<p><strong>File</strong>: <code>src/hocs/LanguageProvider.ts</code></p>
+<p><strong>Features</strong>:
+- React i18next integration for internationalization
+- English language support with fallback
+- JSON-based translation files
+- Interpolation support for dynamic content
+- XSS protection with escape value configuration
+- Compatibility with React Native v3</p>
+<p><strong>Configuration</strong>:
+- <strong>Resources</strong>: English translations from <code>src/language/en.json</code>
+- <strong>Language</strong>: English (en) as default and fallback
+- <strong>Interpolation</strong>: Disabled escape value for React XSS protection
+- <strong>Compatibility</strong>: React Native v3 JSON format</p>
+<p><strong>Usage Example</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">LanguageProvider</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;hocs/LanguageProvider&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">App</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./App&#39;</span><span class="p">;</span>
+
+<span class="c1">// Wrap your app with LanguageProvider</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">AppWrapper</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">LanguageProvider</span><span class="p">&gt;</span>
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">App</span><span class="w"> </span><span class="p">/&gt;</span>
+<span class="w">    </span><span class="p">&lt;/</span><span class="nt">LanguageProvider</span><span class="p">&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="nx">AppWrapper</span><span class="p">;</span>
+
+<span class="c1">// Using translations in components</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">React</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">View</span><span class="p">,</span><span class="w"> </span><span class="nx">Text</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react-native&#39;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">useTranslation</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;react-i18next&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">LoginScreen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="nx">t</span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useTranslation</span><span class="p">();</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">View</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">container</span><span class="p">}&gt;</span>
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">Text</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">title</span><span class="p">}&gt;</span>
+<span class="w">        </span><span class="p">{</span><span class="nx">t</span><span class="p">(</span><span class="s1">&#39;login.button.title&#39;</span><span class="p">)}</span>
+<span class="w">      </span><span class="p">&lt;/</span><span class="nt">Text</span><span class="p">&gt;</span>
+
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">TextInput</span>
+<span class="w">        </span><span class="na">placeholder</span><span class="o">=</span><span class="p">{</span><span class="nx">t</span><span class="p">(</span><span class="s1">&#39;login.input.email.placeholder&#39;</span><span class="p">)}</span>
+<span class="w">        </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">input</span><span class="p">}</span>
+<span class="w">      </span><span class="p">/&gt;</span>
+
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">TextInput</span>
+<span class="w">        </span><span class="na">placeholder</span><span class="o">=</span><span class="p">{</span><span class="nx">t</span><span class="p">(</span><span class="s1">&#39;login.input.password.placeholder&#39;</span><span class="p">)}</span>
+<span class="w">        </span><span class="na">secureTextEntry</span>
+<span class="w">        </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">input</span><span class="p">}</span>
+<span class="w">      </span><span class="p">/&gt;</span>
+<span class="w">    </span><span class="p">&lt;/</span><span class="nt">View</span><span class="p">&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1">// Using translations with interpolation</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">MovieCard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">({</span><span class="nx">movie</span><span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="nx">t</span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useTranslation</span><span class="p">();</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">View</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">card</span><span class="p">}&gt;</span>
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">Text</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">title</span><span class="p">}&gt;</span>
+<span class="w">        </span><span class="p">{</span><span class="nx">t</span><span class="p">(</span><span class="s1">&#39;dashboard.detail.name&#39;</span><span class="p">)}</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="nx">movie</span><span class="p">.</span><span class="nx">name</span><span class="p">}</span>
+<span class="w">      </span><span class="p">&lt;/</span><span class="nt">Text</span><span class="p">&gt;</span>
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">Text</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">subtitle</span><span class="p">}&gt;</span>
+<span class="w">        </span><span class="p">{</span><span class="nx">t</span><span class="p">(</span><span class="s1">&#39;dashboard.detail.publisher&#39;</span><span class="p">)}</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="nx">movie</span><span class="p">.</span><span class="nx">publisher</span><span class="p">}</span>
+<span class="w">      </span><span class="p">&lt;/</span><span class="nt">Text</span><span class="p">&gt;</span>
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">Text</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">body</span><span class="p">}&gt;</span>
+<span class="w">        </span><span class="p">{</span><span class="nx">t</span><span class="p">(</span><span class="s1">&#39;dashboard.detail.firstAppearance&#39;</span><span class="p">)}</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="nx">movie</span><span class="p">.</span><span class="nx">firstappearance</span><span class="p">}</span>
+<span class="w">      </span><span class="p">&lt;/</span><span class="nt">Text</span><span class="p">&gt;</span>
+<span class="w">    </span><span class="p">&lt;/</span><span class="nt">View</span><span class="p">&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1">// Using translations in async operations</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">DataScreen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="nx">t</span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">useTranslation</span><span class="p">();</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="p">[</span><span class="nx">loading</span><span class="p">,</span><span class="w"> </span><span class="nx">setLoading</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">React</span><span class="p">.</span><span class="nx">useState</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">handleDataFetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">setLoading</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// Fetch data</span>
+<span class="w">      </span><span class="k">await</span><span class="w"> </span><span class="nx">fetchData</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">t</span><span class="p">(</span><span class="s1">&#39;error.fetch.failed&#39;</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">setLoading</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="p">&lt;</span><span class="nt">View</span><span class="w"> </span><span class="na">style</span><span class="o">=</span><span class="p">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">container</span><span class="p">}&gt;</span>
+<span class="w">      </span><span class="p">{</span><span class="nx">loading</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">&lt;</span><span class="nt">Loader</span><span class="w"> </span><span class="na">size</span><span class="o">=</span><span class="s">&quot;large&quot;</span><span class="w"> </span><span class="na">color</span><span class="o">=</span><span class="s">&quot;#0077b6&quot;</span><span class="w"> </span><span class="p">/&gt;}</span>
+<span class="w">      </span><span class="p">&lt;</span><span class="nt">Text</span><span class="p">&gt;{</span><span class="nx">t</span><span class="p">(</span><span class="s1">&#39;dashboard.list.title&#39;</span><span class="p">)}&lt;/</span><span class="nt">Text</span><span class="p">&gt;</span>
+<span class="w">    </span><span class="p">&lt;/</span><span class="nt">View</span><span class="p">&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p><strong>Translation System</strong>:
+The LanguageProvider uses a comprehensive translation system with the following key translations:</p>
+<p><strong>Login &amp; Authentication</strong>:
+- <code>login.button.title</code>: "Login"
+- <code>login.input.email.placeholder</code>: "Email"
+- <code>login.input.password.placeholder</code>: "Password"</p>
+<p><strong>Loading States</strong>:
+- <code>loading.title</code>: "Loading..."</p>
+<p><strong>Dashboard &amp; Content</strong>:
+- <code>dashboard.list.title</code>: "Movie List"
+- <code>dashboard.detail.title</code>: "Movie Details"
+- <code>dashboard.button.title</code>: "Back"</p>
+<p><strong>Detail Information</strong>:
+- <code>dashboard.detail.name</code>: "Name"
+- <code>dashboard.detail.team</code>: "Team"
+- <code>dashboard.detail.firstAppearance</code>: "First Appearance"
+- <code>dashboard.detail.publisher</code>: "Publisher"
+- <code>dashboard.detail.bio</code>: "Bio"</p>
+            </article>
+        </div>
+
+        <footer class="doc-footer">
+            <span>Template · Knowledge Transfer Portal</span>
+            <a href="index.html">← Back to index</a>
+        </footer>
+    </div>
+
+    <script>
+        // ── Wrap all tables for horizontal scroll ────────────────
+        document.querySelectorAll('article table').forEach(t => {
+            const wrap = document.createElement('div');
+            wrap.className = 'table-wrap';
+            t.parentNode.insertBefore(wrap, t);
+            wrap.appendChild(t);
+        });
+
+        // ── Auto-build TOC from headings ──────────────────────────
+        (function() {
+            const headings = document.querySelectorAll('#docArticle h2, #docArticle h3');
+            if (headings.length < 2) {
+                document.getElementById('docToc').style.display = 'none';
+                return;
+            }
+            const ul = document.createElement('ul');
+            headings.forEach((h, i) => {
+                if (!h.id) h.id = 'heading-' + i;
+                const li  = document.createElement('li');
+                const a   = document.createElement('a');
+                a.href        = '#' + h.id;
+                a.textContent = h.textContent;
+                if (h.tagName === 'H3') {
+                    const sub = document.createElement('ul');
+                    const subLi = document.createElement('li');
+                    subLi.appendChild(a);
+                    sub.appendChild(subLi);
+                    ul.appendChild(sub);
+                } else {
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+            });
+            document.getElementById('tocList').appendChild(ul);
+
+            // Highlight active heading on scroll
+            const links = ul.querySelectorAll('a');
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        links.forEach(l => l.style.color = '');
+                        const active = ul.querySelector('a[href="#' + e.target.id + '"]');
+                        if (active) active.style.color = 'var(--accent)';
+                    }
+                });
+            }, { rootMargin: '-20% 0px -75% 0px' });
+            headings.forEach(h => obs.observe(h));
+        })();
+
+        // ── Smooth back-to-top on logo click ─────────────────────
+        document.querySelector('.doc-topbar-brand').addEventListener('click', function(e) {
+            if (window.location.pathname.endsWith('index.html') ||
+                window.location.pathname.endsWith('/')) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    </script>
+
+    <!-- Mermaid: loaded last so DOM is fully ready -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            securityLevel: 'loose',
+            themeVariables: {
+                primaryColor: '#1e1e28',
+                primaryTextColor: '#f0f0f5',
+                primaryBorderColor: '#63b3ed',
+                lineColor: '#444455',
+                secondaryColor: '#18181f',
+                tertiaryColor: '#111118',
+                edgeLabelBackground: '#18181f',
+                fontFamily: 'DM Sans, sans-serif'
+            }
+        });
+        // Explicitly render all .mermaid divs after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+        });
+        // Fallback: if DOMContentLoaded already fired (script at bottom)
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+        }
+    </script>
+</body>
+</html>
