@@ -15,7 +15,7 @@ def convert_md_to_html():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>__TITLE__</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         /* ── Design tokens (mirrors index.html) ─────────────────── */
         :root {
@@ -47,7 +47,7 @@ def convert_md_to_html():
         html::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 6px; }
 
         body {
-            font-family: 'DM Sans', sans-serif;
+            font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             line-height: 1.75;
             color: var(--text-primary);
             background: var(--bg);
@@ -96,7 +96,7 @@ def convert_md_to_html():
             flex-shrink: 0;
         }
         .doc-topbar-name {
-            font-family: 'Syne', sans-serif;
+            font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             font-size: 15px;
             font-weight: 700;
             color: var(--text-primary);
@@ -108,7 +108,7 @@ def convert_md_to_html():
             font-weight: 300;
         }
         .doc-topbar-title {
-            font-family: 'DM Mono', monospace;
+            font-family: "Inter", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
             font-size: 12px;
             color: var(--accent);
             letter-spacing: 0.3px;
@@ -116,7 +116,7 @@ def convert_md_to_html():
         }
         .doc-topbar-spacer { flex: 1; }
         .doc-topbar-tag {
-            font-family: 'DM Mono', monospace;
+            font-family: "Inter", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
             font-size: 10px;
             color: var(--text-dim);
             letter-spacing: 1.5px;
@@ -149,7 +149,7 @@ def convert_md_to_html():
         .doc-toc::-webkit-scrollbar { width: 4px; }
         .doc-toc::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
         .doc-toc-label {
-            font-family: 'DM Mono', monospace;
+            font-family: "Inter", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
             font-size: 9px;
             font-weight: 500;
             color: var(--text-dim);
@@ -194,7 +194,7 @@ def convert_md_to_html():
 
         /* ── Typography ──────────────────────────────────────────── */
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Syne', sans-serif;
+            font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             font-weight: 700;
             color: var(--text-primary);
             letter-spacing: -0.5px;
@@ -249,7 +249,7 @@ def convert_md_to_html():
             margin-top: 24px;
             margin-bottom: 10px;
             color: var(--accent);
-            font-family: 'DM Mono', monospace;
+            font-family: "Inter", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
@@ -278,7 +278,7 @@ def convert_md_to_html():
 
         /* ── Inline code ─────────────────────────────────────────── */
         code {
-            font-family: 'DM Mono', monospace;
+            font-family: "Inter", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
             font-size: 13px;
             font-weight: 400;
             background: var(--surface3);
@@ -455,7 +455,7 @@ def convert_md_to_html():
             border-bottom: 1px solid var(--border);
         }
         th {
-            font-family: 'DM Mono', monospace;
+            font-family: "Inter", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
             font-size: 11px;
             font-weight: 500;
             color: var(--accent);
@@ -487,7 +487,7 @@ def convert_md_to_html():
             line-height: 1.75;
         }
         ul li::marker { color: var(--accent); }
-        ol li::marker { color: var(--accent); font-family: 'DM Mono', monospace; font-size: 13px; }
+        ol li::marker { color: var(--accent); font-family: "Inter", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace; font-size: 13px; }
         li > ul, li > ol { margin-top: 6px; margin-bottom: 0; }
 
         /* ── Horizontal rule ─────────────────────────────────────── */
@@ -516,7 +516,7 @@ def convert_md_to_html():
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-family: 'DM Mono', monospace;
+            font-family: "Inter", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
             font-size: 11px;
             color: var(--text-dim);
             letter-spacing: 1px;
@@ -555,7 +555,7 @@ def convert_md_to_html():
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-family: 'DM Mono', monospace;
+            font-family: "Inter", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
             font-size: 11px;
             color: var(--text-dim);
         }
@@ -675,7 +675,7 @@ def convert_md_to_html():
                 secondaryColor: '#18181f',
                 tertiaryColor: '#111118',
                 edgeLabelBackground: '#18181f',
-                fontFamily: 'DM Sans, sans-serif'
+                fontFamily: 'Inter, "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
             }
         });
         // Explicitly render all .mermaid divs after DOM is ready
